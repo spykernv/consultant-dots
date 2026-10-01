@@ -1,0 +1,191 @@
+{
+  "description": "Ground truth for the challenge eval. Each sample case has two candidate answers: the deliberately flawed one shown in the app (src/lib/samples.ts) and a strong control answer written for this eval. Labels say which consulting reflexes (E1-E10, src/lib/domain/reflexes.ts) each answer violates. The control answers let false positives happen: a critic that flags everything scores well on flawed answers only.",
+  "method": "Three independent model annotators per answer, blind to the app's output, each with a different reading strategy (sentence by sentence, reflex by reflex, expected-content gap analysis). A reflex is labelled violated with at least 2 of 3 votes, not violated with 0 of 3, and ambiguous with 1 of 3; ambiguous reflexes are ignored by the metrics. Labels should be reviewed by hand: edit this file to override them.",
+  "reviewedByHand": false,
+  "cases": {
+    "data-platform": {
+      "flawed": {
+        "source": "src/lib/samples.ts (flawedAnswer)",
+        "violated": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "E6",
+          "E8",
+          "E9"
+        ],
+        "notViolated": [
+          "E7",
+          "E10"
+        ],
+        "ambiguous": [],
+        "votes": {
+          "E1": "3/3",
+          "E2": "3/3",
+          "E3": "3/3",
+          "E4": "3/3",
+          "E5": "3/3",
+          "E6": "3/3",
+          "E7": "0/3",
+          "E8": "3/3",
+          "E9": "3/3",
+          "E10": "0/3"
+        }
+      },
+      "control": {
+        "answer": "Je reformule : la DG veut des chiffres groupe fiables, partagés et produits vite ; la data platform n'est qu'un moyen. Avant de choisir une architecture, je poserais trois questions : quelles décisions le CODIR prend avec ces chiffres, quelles données allemandes sont exactement concernées, et qui arbitre les définitions de KPIs. Mon diagnostic : la cause racine est l'absence de définitions communes et de gouvernance, pas l'outil ; une plateforme sans KPIs harmonisés produirait plus vite des chiffres toujours contestés. Je comparerais trois options : tout centraliser, fédérer, ou un modèle hybride avec des agrégats harmonisés au niveau groupe et les données nominatives qui restent en Allemagne. Je recommande l'hybride : il respecte la contrainte allemande et reste portable par une DSI de 15 personnes, avec un batch mensuel puis quotidien plutôt que du temps réel, inutile pour une clôture mensuelle. Gouvernance : la DG sponsor, le DAF propriétaire des définitions, un data owner par filiale, la DSI qui construit. Pilote : l'OTD sur la France et l'Espagne en trois mois, conçu comme la première brique du socle groupe. Accompagnement : former les contrôleurs, faire valider le dictionnaire de KPIs par les filiales, arrêter l'Excel après deux clôtures en parallèle. Succès mesuré : délai de consolidation de 10 jours à 3, et plus aucun chiffre contesté en CODIR sur le périmètre pilote.",
+        "violated": [],
+        "notViolated": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "E6",
+          "E7",
+          "E8",
+          "E9",
+          "E10"
+        ],
+        "ambiguous": [],
+        "votes": {
+          "E1": "0/3",
+          "E2": "0/3",
+          "E3": "0/3",
+          "E4": "0/3",
+          "E5": "0/3",
+          "E6": "0/3",
+          "E7": "0/3",
+          "E8": "0/3",
+          "E9": "0/3",
+          "E10": "0/3"
+        }
+      }
+    },
+    "genai-assurance": {
+      "flawed": {
+        "source": "src/lib/samples.ts (flawedAnswer)",
+        "violated": [
+          "E1",
+          "E3",
+          "E4",
+          "E5",
+          "E6",
+          "E9"
+        ],
+        "notViolated": [
+          "E2",
+          "E8",
+          "E10"
+        ],
+        "ambiguous": [
+          "E7"
+        ],
+        "votes": {
+          "E1": "3/3",
+          "E2": "0/3",
+          "E3": "3/3",
+          "E4": "3/3",
+          "E5": "3/3",
+          "E6": "3/3",
+          "E7": "1/3",
+          "E8": "0/3",
+          "E9": "3/3",
+          "E10": "0/3"
+        }
+      },
+      "control": {
+        "answer": "L'enjeu n'est pas de « mettre de la GenAI » mais de réduire les 9 minutes de traitement, dont un tiers passé à chercher l'information, et de soutenir des conseillers qui tournent beaucoup. Je commencerais par diagnostiquer la base documentaire : sur 15 000 pages souvent obsolètes ou contradictoires, aucun outil ne donnera de bonnes réponses sans un nettoyage préalable. Je comparerais trois options : le chatbot autonome face aux clients, un assistant pour les conseillers, ou une refonte de la recherche documentaire. Je recommande un copilote pour les conseillers, avec un humain dans la boucle : les réponses ont des conséquences contractuelles, donc le risque d'erreur doit être maîtrisé, avec des réponses sourcées, un conseiller qui valide, un périmètre limité aux procédures validées, aucune donnée client envoyée au modèle et une conformité RGPD validée avec le DPO. Le modèle et l'éditeur seraient choisis sur des critères : qualité sur nos documents, hébergement, coût, réversibilité. Parties prenantes : la direction de la relation client comme sponsor, la conformité et le juridique, le DPO, les managers de plateau et des conseillers associés dès la conception. Pilote : une famille de questions sur un plateau de 50 conseillers pendant trois mois, en réutilisant ensuite la base nettoyée et le socle de recherche. Adoption : une formation courte et des retours des conseillers chaque semaine. Mesure : temps de traitement de 9 à 7 minutes sur le pilote, taux de réponses correctes contrôlé par échantillon, satisfaction client.",
+        "violated": [],
+        "notViolated": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "E6",
+          "E7",
+          "E8",
+          "E9",
+          "E10"
+        ],
+        "ambiguous": [],
+        "votes": {
+          "E1": "0/3",
+          "E2": "0/3",
+          "E3": "0/3",
+          "E4": "0/3",
+          "E5": "0/3",
+          "E6": "0/3",
+          "E7": "0/3",
+          "E8": "0/3",
+          "E9": "0/3",
+          "E10": "0/3"
+        }
+      }
+    },
+    "cloud-industriel": {
+      "flawed": {
+        "source": "src/lib/samples.ts (flawedAnswer)",
+        "violated": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "E6",
+          "E7",
+          "E10"
+        ],
+        "notViolated": [
+          "E8",
+          "E9"
+        ],
+        "ambiguous": [],
+        "votes": {
+          "E1": "3/3",
+          "E2": "3/3",
+          "E3": "3/3",
+          "E4": "3/3",
+          "E5": "2/3",
+          "E6": "3/3",
+          "E7": "3/3",
+          "E8": "0/3",
+          "E9": "0/3",
+          "E10": "3/3"
+        }
+      },
+      "control": {
+        "answer": "Le sujet n'est pas de « tout migrer dans le cloud » : c'est sortir du datacenter dans 18 mois en réduisant les coûts et les délais de déploiement, sans jamais interrompre la production. Je ferais d'abord un diagnostic du portefeuille : pour chacune des 120 applications, sa criticité, ses dépendances, ses contraintes de latence, les versions de MES par site et son coût actuel. Ensuite, une décision application par application : les applications qui pilotent les lignes de production restent au plus près des sites, en edge ou en hébergement local ; le reste se répartit entre rehost, replatform, remplacement par du SaaS ou décommissionnement. Je recommande une migration par vagues, en commençant par des applications non critiques pour industrialiser la méthode et le socle cloud, plutôt qu'un big bang sur 12 mois ; je négocierais aussi une prolongation courte du contrat d'infogérance comme filet de sécurité. Parties prenantes : le DSI, les directeurs de site, la production et la qualité, les achats pour l'infogérance. Adoption : former les équipes d'exploitation au nouveau modèle et harmoniser progressivement les versions de MES. Mesure : coût d'infrastructure, délai de déploiement de plusieurs semaines à quelques jours, zéro interruption de production pendant la migration et part du portefeuille migrée à chaque vague.",
+        "violated": [],
+        "notViolated": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "E6",
+          "E7",
+          "E8",
+          "E9",
+          "E10"
+        ],
+        "ambiguous": [],
+        "votes": {
+          "E1": "0/3",
+          "E2": "0/3",
+          "E3": "0/3",
+          "E4": "0/3",
+          "E5": "0/3",
+          "E6": "0/3",
+          "E7": "0/3",
+          "E8": "0/3",
+          "E9": "0/3",
+          "E10": "0/3"
+        }
+      }
+    }
+  }
+}

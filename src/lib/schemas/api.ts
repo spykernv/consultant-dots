@@ -111,11 +111,17 @@ export type EngineErrorCode =
   | "engine_error"
   | "bad_request";
 
+export type TokenUsage = { input: number; output: number; cacheRead: number; cacheWrite: number };
+
 export type DoneMeta = {
   ms: number;
   model: string | null;
   costUsd: number | null;
   notes: string[];
+  /** Reported by the API engine only; the CLI reports a cost but no token breakdown. */
+  usage?: TokenUsage | null;
+  /** Counts of what the code-side guardrails caught on this run (see src/lib/pipeline/checks.ts). */
+  checks?: Record<string, number>;
 };
 
 export type StageEvent =

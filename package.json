@@ -14,9 +14,11 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "eval": "tsx scripts/eval.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
     "lucide-react": "^1.48.0",
@@ -34,6 +36,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@next/env": "^16.3.6",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.19.0",
     "@types/react": "^19",
@@ -42,6 +45,7 @@
     "eslint-config-next": "16.3.6",
     "jsdom": "^29.1.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.2"
   }

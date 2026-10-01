@@ -10,7 +10,7 @@ const FAST_START = "Latency-sensitive; begin your visible answer immediately.";
 const block = (tag: string, body: string) => `<${tag}>\n${body.trim()}\n</${tag}>`;
 const json = (value: unknown) => JSON.stringify(value);
 
-const INSTRUCTIONS: Record<StageId, string> = {
+export const INSTRUCTIONS: Record<StageId, string> = {
   classify: `STEP 1 — CASE IDENTIFICATION.
 Classify the case: one primary domain and 0-2 secondary domains from the list above.
 Lower the confidence when the case mixes domains or stays vague.

@@ -5,9 +5,11 @@ import { SYSTEM_PROMPT } from "@/lib/prompts/system";
 import { buildUserMessage, type Revision } from "@/lib/prompts/stages";
 import { engineEnv, STAGE_EFFORT, STAGE_TIMEOUT_MS } from "@/lib/engine/config";
 import { runClaudeCode } from "@/lib/engine/claude-code";
+import { runClaudeApi } from "@/lib/engine/claude-api";
 import { recordFixture, runMock } from "@/lib/engine/mock";
 import { EngineError, type EngineRequest } from "@/lib/engine/types";
 import { normalizeStage } from "./normalize";
+import { stageChecks } from "./checks";
 
 const strictSchemas = new Map<StageId, JsonSchema>();
 
@@ -61,7 +63,9 @@ export async function runStage<K extends StageId>(
   try {
     const result = request.mock
       ? await runMock(stage, request.caseId, engineRequest)
-      : await runClaudeCode(engineRequest);
+      : engineEnv().engine === "api"
+        ? await runClaudeApi(engineRequest)
+        : await runClaudeCode(engineRequest);
 
     const parsed = STAGE_SCHEMAS[stage].safeParse(result.output);
     if (!parsed.success) {
@@ -73,6 +77,7 @@ export async function runStage<K extends StageId>(
       return;
     }
     const { data, notes } = normalizeStage(stage, parsed.data as StageOutputs[K], inputs);
+    const checks = stageChecks(stage, parsed.data as StageOutputs[K], data, inputs);
     const ms = Date.now() - started;
 
     if (!request.mock && !revision && request.caseId && engineEnv().recordFixtures) {
@@ -83,7 +88,7 @@ export async function runStage<K extends StageId>(
         (result.model ? ` · ${result.model}` : "") +
         (result.costUsd != null ? ` · $${result.costUsd.toFixed(3)}` : ""),
     );
-    emit({ type: "done", data, meta: { ms, model: result.model, costUsd: result.costUsd, notes } });
+    emit({ type: "done", data, meta: { ms, model: result.model, costUsd: result.costUsd, notes, usage: result.usage ?? null, checks } });
   } catch (err) {
     const error =
       err instanceof EngineError

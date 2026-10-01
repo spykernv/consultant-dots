@@ -1,0 +1,424 @@
+{
+  "promptVersion": "5467c75a",
+  "engine": "cli",
+  "summary": {
+    "runs": 3,
+    "pipelinesCompleted": {
+      "value": 1,
+      "num": 3,
+      "den": 3
+    },
+    "stageSuccess": {
+      "value": 1,
+      "num": 48,
+      "den": 48
+    },
+    "invalidOutputs": 0,
+    "errors": {},
+    "servedModels": [
+      "claude-opus-5-5"
+    ],
+    "factVerification": {
+      "value": 1,
+      "num": 24,
+      "den": 24
+    },
+    "citationDrop": {
+      "value": 0,
+      "num": 0,
+      "den": 79
+    },
+    "uncitedFindings": {
+      "value": 0,
+      "num": 0,
+      "den": 23
+    },
+    "inferredFindings": {
+      "value": 0,
+      "num": 0,
+      "den": 23
+    },
+    "recommendationFailsConstraint": {
+      "value": 0,
+      "num": 0,
+      "den": 3
+    },
+    "pilotFixed": {
+      "value": 0,
+      "num": 0,
+      "den": 3
+    },
+    "challenge": {
+      "precision": {
+        "value": 0.4943820224719101,
+        "num": 44,
+        "den": 89
+      },
+      "highSeverityPrecision": {
+        "value": 0.896551724137931,
+        "num": 26,
+        "den": 29
+      },
+      "recall": {
+        "value": 0.6666666666666666,
+        "num": 44,
+        "den": 66
+      },
+      "recallCeiling": 0.8181818181818182,
+      "flawedRecall": {
+        "value": 0.6666666666666666,
+        "num": 44,
+        "den": 66
+      },
+      "controlFalsePositives": {
+        "value": 4.333333333333333,
+        "num": 39,
+        "den": 9
+      },
+      "baseline": {
+        "flags": [
+          "E1",
+          "E3",
+          "E4",
+          "E5",
+          "E6",
+          "E2"
+        ],
+        "precision": {
+          "value": 0.4722222222222222,
+          "num": 17,
+          "den": 36
+        },
+        "recall": {
+          "value": 0.7727272727272727,
+          "num": 17,
+          "den": 22
+        }
+      },
+      "missedOnFlawed": {
+        "E2": 3,
+        "E5": 9,
+        "E9": 3,
+        "E3": 6,
+        "E4": 1
+      },
+      "byKind": {
+        "flawed": {
+          "runs": 9,
+          "meanFlags": 6,
+          "meanHighFlags": 3.2222222222222223,
+          "levels": {
+            "a_retravailler": 9
+          }
+        },
+        "control": {
+          "runs": 9,
+          "meanFlags": 4.666666666666667,
+          "meanHighFlags": 0.2222222222222222,
+          "levels": {
+            "solide": 9
+          }
+        }
+      }
+    },
+    "challengeQuoteRemoval": {
+      "value": 0,
+      "num": 0,
+      "den": 87
+    },
+    "selfCritiqueHighFlags": {
+      "mean": 0.3333333333333333,
+      "levels": {
+        "solide": 3
+      }
+    },
+    "latencyMs": {
+      "classify": {
+        "p50": 4666,
+        "p90": 5176
+      },
+      "frame": {
+        "p50": 26046,
+        "p90": 29098
+      },
+      "questions": {
+        "p50": 11596,
+        "p90": 12094
+      },
+      "diagnose": {
+        "p50": 17428,
+        "p90": 18197
+      },
+      "currentState": {
+        "p50": 10531,
+        "p90": 10786
+      },
+      "options": {
+        "p50": 35736,
+        "p90": 39857
+      },
+      "target": {
+        "p50": 23557,
+        "p90": 26637
+      },
+      "roadmap": {
+        "p50": 31480,
+        "p90": 33101
+      },
+      "oral": {
+        "p50": 18549,
+        "p90": 20484
+      },
+      "challenge": {
+        "p50": 25177,
+        "p90": 28377
+      }
+    },
+    "pipelineWallMs": {
+      "p50": 127753,
+      "max": 145405
+    },
+    "costUsdPerRun": 1.2358233333333335,
+    "costCoverage": {
+      "value": 1,
+      "num": 3,
+      "den": 3
+    },
+    "tokens": null,
+    "perCase": {
+      "data-platform": {
+        "flawed": {
+          "flagged": [
+            [
+              "E1",
+              "E3",
+              "E4",
+              "E6",
+              "E7",
+              "E8"
+            ],
+            [
+              "E1",
+              "E3",
+              "E4",
+              "E6",
+              "E7",
+              "E8"
+            ],
+            [
+              "E1",
+              "E3",
+              "E4",
+              "E6",
+              "E7",
+              "E8"
+            ]
+          ],
+          "precision": [
+            0.8333333333333334,
+            0.8333333333333334,
+            0.8333333333333334
+          ],
+          "recall": [
+            0.625,
+            0.625,
+            0.625
+          ]
+        },
+        "control": {
+          "flagged": [
+            [
+              "E1",
+              "E3",
+              "E4",
+              "E6",
+              "E7"
+            ],
+            [
+              "E1",
+              "E3",
+              "E4",
+              "E6"
+            ],
+            [
+              "E3",
+              "E4",
+              "E6",
+              "E7"
+            ]
+          ],
+          "precision": [
+            0,
+            0,
+            0
+          ],
+          "recall": [
+            null,
+            null,
+            null
+          ]
+        },
+        "factVerification": {
+          "value": 1,
+          "num": 8,
+          "den": 8
+        }
+      },
+      "genai-assurance": {
+        "flawed": {
+          "flagged": [
+            [
+              "E1",
+              "E2",
+              "E4",
+              "E6",
+              "E7",
+              "E9"
+            ],
+            [
+              "E1",
+              "E2",
+              "E4",
+              "E6",
+              "E7",
+              "E9"
+            ],
+            [
+              "E1",
+              "E2",
+              "E4",
+              "E6",
+              "E7",
+              "E9"
+            ]
+          ],
+          "precision": [
+            0.8,
+            0.8,
+            0.8
+          ],
+          "recall": [
+            0.6666666666666666,
+            0.6666666666666666,
+            0.6666666666666666
+          ]
+        },
+        "control": {
+          "flagged": [
+            [
+              "E1",
+              "E4",
+              "E6",
+              "E9"
+            ],
+            [
+              "E1",
+              "E3",
+              "E4",
+              "E6"
+            ],
+            [
+              "E1",
+              "E4",
+              "E5",
+              "E6",
+              "E9"
+            ]
+          ],
+          "precision": [
+            0,
+            0,
+            0
+          ],
+          "recall": [
+            null,
+            null,
+            null
+          ]
+        },
+        "factVerification": {
+          "value": 1,
+          "num": 8,
+          "den": 8
+        }
+      },
+      "cloud-industriel": {
+        "flawed": {
+          "flagged": [
+            [
+              "E1",
+              "E2",
+              "E4",
+              "E6",
+              "E7",
+              "E10"
+            ],
+            [
+              "E1",
+              "E2",
+              "E4",
+              "E6",
+              "E7",
+              "E10"
+            ],
+            [
+              "E1",
+              "E2",
+              "E6",
+              "E7",
+              "E10"
+            ]
+          ],
+          "precision": [
+            1,
+            1,
+            1
+          ],
+          "recall": [
+            0.75,
+            0.75,
+            0.625
+          ]
+        },
+        "control": {
+          "flagged": [
+            [
+              "E2",
+              "E4",
+              "E5",
+              "E6"
+            ],
+            [
+              "E3",
+              "E4",
+              "E5",
+              "E6",
+              "E7"
+            ],
+            [
+              "E3",
+              "E4",
+              "E6",
+              "E7"
+            ]
+          ],
+          "precision": [
+            0,
+            0,
+            0
+          ],
+          "recall": [
+            null,
+            null,
+            null
+          ]
+        },
+        "factVerification": {
+          "value": 1,
+          "num": 8,
+          "den": 8
+        }
+      }
+    }
+  }
+}

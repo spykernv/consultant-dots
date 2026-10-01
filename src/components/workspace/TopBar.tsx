@@ -127,6 +127,7 @@ export function Timer({ compact = false }: { compact?: boolean }) {
 }
 
 type Health = {
+  engine?: "cli" | "api";
   ok: boolean;
   binFound: boolean;
   version: string | null;
@@ -160,11 +161,12 @@ export function HealthBadge() {
   if (!health && !failed) {
     return (
       <Badge variant="outline" className="text-slate-500">
-        <Loader2 className="animate-spin" /> Claude Code…
+        <Loader2 className="animate-spin" /> Connexion…
       </Badge>
     );
   }
   const ok = health?.ok ?? false;
+  const api = health?.engine === "api";
   const usage = health?.rateLimit?.fiveHourUtilization;
   const model = health?.model.replace(/^claude-/, "").replace(/-(\d)-(\d)$/, " $1.$2") ?? "";
   return (
@@ -175,16 +177,18 @@ export function HealthBadge() {
           className={cn("cursor-help", ok ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-rose-200 bg-rose-50 text-rose-700")}
         >
           {ok ? <Check /> : <ShieldAlert />}
-          Claude Code{ok ? ` · ${model}` : " indisponible"}
-          {ok && usage != null ? ` · ${Math.round(usage * 100)} %` : ""}
+          {api ? "API Claude" : "Claude Code"}{ok ? ` · ${model}` : " indisponible"}
+          {ok && !api && usage != null ? ` · ${Math.round(usage * 100)} %` : ""}
         </Badge>
       </TooltipTrigger>
       <TooltipContent className="max-w-xs text-xs">
         {failed || !health
           ? "Impossible de joindre le serveur local."
           : health.error ??
-            `CLI ${health.version ?? "?"} · connexion ${health.subscriptionType ?? "claude.ai"} · modèle ${health.model}` +
-              (usage != null ? ` · quota 5 h utilisé : ${Math.round(usage * 100)} %` : "")}
+            (api
+              ? `Moteur API · modèle ${health.model} · facturé au token sur ta clé API`
+              : `CLI ${health.version ?? "?"} · connexion ${health.subscriptionType ?? "claude.ai"} · modèle ${health.model}` +
+                (usage != null ? ` · quota 5 h utilisé : ${Math.round(usage * 100)} %` : ""))}
       </TooltipContent>
     </Tooltip>
   );

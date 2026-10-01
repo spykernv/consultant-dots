@@ -1,4 +1,4 @@
-import type { EngineErrorCode, StageEvent } from "@/lib/schemas/api";
+import type { EngineErrorCode, StageEvent, TokenUsage } from "@/lib/schemas/api";
 import type { JsonSchema } from "@/lib/schemas/strict-schema";
 
 export type Effort = "low" | "medium" | "high" | "xhigh" | "max";
@@ -26,6 +26,7 @@ export type EngineResult = {
   model: string | null;
   costUsd: number | null;
   rateLimit: RateLimitInfo | null;
+  usage?: TokenUsage | null;
 };
 
 export class EngineError extends Error {

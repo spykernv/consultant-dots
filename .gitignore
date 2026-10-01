@@ -48,3 +48,6 @@ next-env.d.ts
 
 # local tooling
 /.claude/
+
+# raw eval outputs (large; summaries in evals/results are kept)
+/evals/results/raw/
