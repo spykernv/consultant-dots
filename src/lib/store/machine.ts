@@ -8,6 +8,7 @@ import {
 } from "@/lib/schemas/api";
 import type { Initiative, OptionsAnalysis, Verdict } from "@/lib/schemas/options";
 import { DEFAULT_WEIGHTS, MAX_WEIGHT, weightedScore, type Criterion, type Weights } from "@/lib/domain/scoring";
+import type { InterviewState } from "@/lib/interview/schema";
 import { splitClientNotes } from "@/lib/prompts/brief";
 
 export type StageStatus = "idle" | "running" | "done" | "error" | "interrupted";
@@ -54,6 +55,11 @@ export type Session = {
   challengeAnswer: string;
   /** Id of the case's folder under cases/, set on its first automatic save (never for the demo). */
   savedId: string | null;
+  /**
+   * The client interview, when the case was started in that mode. Sessions saved before it have no such field:
+   * the store and openSaved spread them over initialSession, so it reads null there.
+   */
+  interview: InterviewState | null;
 };
 
 export const STAGE_DEPS: Record<StageId, StageId[]> = {
@@ -107,6 +113,7 @@ export function initialSession(epoch = 0): Session {
     matrix: { weights: { ...DEFAULT_WEIGHTS }, initiatives: null },
     challengeAnswer: "",
     savedId: null,
+    interview: null,
   };
 }
 

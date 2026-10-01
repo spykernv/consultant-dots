@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, FlaskConical, Sparkles } from "lucide-react";
+import { ArrowRight, FlaskConical, MessagesSquare, Sparkles } from "lucide-react";
+import { interviewActions } from "@/lib/interview/client";
+import { INTERVIEW_MAX_ROUNDS } from "@/lib/interview/schema";
 import { MAX_CASE_CHARS } from "@/lib/schemas/api";
 import { SAMPLE_CASES } from "@/lib/samples";
 import { actions } from "@/lib/store/orchestrator";
@@ -16,14 +18,16 @@ export function CaseInput() {
   const caseText = useSession((s) => s.caseText);
   const caseId = useSession((s) => s.caseId);
   const [startTimer, setStartTimer] = useState(true);
+  const [interviewMode, setInterviewMode] = useState(false);
   const tooShort = caseText.trim().length < 20;
 
   return (
     <div className="flex min-h-dvh flex-col bg-slate-50">
-      <header className="flex items-center gap-3 border-b border-slate-200 bg-white px-6 py-3">
+      {/* Wraps on a phone rather than pushing the page wider than the screen, as the top bar does. */}
+      <header className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
         <span className="text-sm font-semibold text-slate-900">Consultant Dots</span>
         <span className="text-xs text-slate-400">Préparation de business case · conseil en technologie</span>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <Timer compact />
           <HealthBadge />
         </div>
@@ -71,13 +75,18 @@ export function CaseInput() {
             <Checkbox checked={startTimer} onCheckedChange={(v) => setStartTimer(v === true)} />
             Lancer le chrono 10 min
           </label>
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-600">
+            <Checkbox checked={interviewMode} onCheckedChange={(v) => setInterviewMode(v === true)} />
+            Mode entretien client (client simulé, {INTERVIEW_MAX_ROUNDS} tours)
+          </label>
           <Button
             variant="link"
             className="px-0 text-slate-500"
             onClick={() => {
               const sample = SAMPLE_CASES[0];
               actions.loadCase(sample.text, sample.id);
-              actions.analyse({ mock: true, startTimer: false });
+              if (interviewMode) interviewActions.start({ mock: true, startTimer });
+              else actions.analyse({ mock: true, startTimer: false });
             }}
           >
             <FlaskConical /> Démo sans IA
@@ -86,11 +95,20 @@ export function CaseInput() {
             size="lg"
             className="ml-auto bg-indigo-700 px-4 hover:bg-indigo-800"
             disabled={tooShort}
-            onClick={() => actions.analyse({ mock: false, startTimer })}
+            onClick={() =>
+              interviewMode ? interviewActions.start({ mock: false, startTimer }) : actions.analyse({ mock: false, startTimer })
+            }
           >
-            <Sparkles /> Analyser le case <ArrowRight />
+            {interviewMode ? <MessagesSquare /> : <Sparkles />} {interviewMode ? "Démarrer l'entretien" : "Analyser le case"}{" "}
+            <ArrowRight />
           </Button>
         </div>
+        {interviewMode && (
+          <p className="-mt-2 text-xs text-slate-500">
+            Tu mènes l&apos;entretien face à un client simulé : il ne répond qu&apos;à ce que tu lui demandes. L&apos;analyse
+            complète reste cachée jusqu&apos;au débrief, qui note tes questions et ton raisonnement.
+          </p>
+        )}
 
         <SavedCases />
       </main>

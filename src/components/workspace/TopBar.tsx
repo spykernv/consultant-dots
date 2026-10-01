@@ -344,6 +344,9 @@ function CloseButton() {
 
 export function TopBar() {
   const classification = useSession((s) => s.stages.classify.data);
+  // During the interview the export would give the client's answers away, and the stepper would show the
+  // analysis waiting at the gate: the interview screen has its own progress.
+  const interviewOpen = useSession((s) => Boolean(s.interview && !s.interview.closed));
   const anyRunning = useSession((s) => Object.values(s.stages).some((r) => r.status === "running"));
   const canResume = useSession(
     (s) => !anyRunning && Object.values(s.stages).some((r) => r.status === "interrupted" || r.status === "error"),
@@ -357,21 +360,22 @@ export function TopBar() {
           <span className="text-[11px] text-slate-400">Business case tech</span>
         </div>
         {classification && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex max-w-full min-w-0 flex-wrap items-center gap-1.5">
             <Badge className="bg-indigo-700 text-white">
               {domainLabel(classification.primaryDomain)} · {Math.round(classification.confidence)} %
             </Badge>
             {classification.secondaryDomains.length > 0 && (
-              <Badge variant="outline" className="max-w-60 text-slate-600">
+              <Badge variant="outline" className="max-w-full text-slate-600 sm:max-w-60">
                 <span className="truncate">+ {classification.secondaryDomains.map(domainLabel).join(", ")}</span>
               </Badge>
             )}
           </div>
         )}
-        <div className="ml-auto flex items-center gap-2">
+        {/* Wraps on a phone rather than pushing the page wider than the screen. */}
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <Timer />
           <HealthBadge />
-          <ExportMenu />
+          {!interviewOpen && <ExportMenu />}
           {anyRunning && (
             <Button size="sm" variant="outline" onClick={() => actions.stop()}>
               <Square /> Arrêter
@@ -387,7 +391,7 @@ export function TopBar() {
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-slate-100 bg-slate-50/60 px-4 py-1">
-        <Stepper />
+        {interviewOpen ? <span /> : <Stepper />}
         <ConfidentialityNotice />
       </div>
     </header>

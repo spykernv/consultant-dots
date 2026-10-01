@@ -4,8 +4,7 @@ import { toStrictJsonSchema, type JsonSchema } from "@/lib/schemas/strict-schema
 import { SYSTEM_PROMPT } from "@/lib/prompts/system";
 import { buildUserMessage, type Revision } from "@/lib/prompts/stages";
 import { engineEnv, STAGE_EFFORT, STAGE_TIMEOUT_MS } from "@/lib/engine/config";
-import { runClaudeCode } from "@/lib/engine/claude-code";
-import { runClaudeApi } from "@/lib/engine/claude-api";
+import { runLiveEngine } from "@/lib/engine/dispatch";
 import { recordFixture, runMock } from "@/lib/engine/mock";
 import { EngineError, type EngineRequest } from "@/lib/engine/types";
 import { normalizeStage } from "./normalize";
@@ -22,7 +21,7 @@ export function strictSchemaFor(stage: StageId): JsonSchema {
   return schema;
 }
 
-function describeIssues(issues: { path: PropertyKey[]; message: string }[]) {
+export function describeIssues(issues: { path: PropertyKey[]; message: string }[]) {
   return issues
     .slice(0, 3)
     .map((i) => `${i.path.map(String).join(".") || "(racine)"} : ${i.message}`)
@@ -61,11 +60,7 @@ export async function runStage<K extends StageId>(
   };
 
   try {
-    const result = request.mock
-      ? await runMock(stage, request.caseId, engineRequest)
-      : engineEnv().engine === "api"
-        ? await runClaudeApi(engineRequest)
-        : await runClaudeCode(engineRequest);
+    const result = request.mock ? await runMock(stage, request.caseId, engineRequest) : await runLiveEngine(engineRequest);
 
     const parsed = STAGE_SCHEMAS[stage].safeParse(result.output);
     if (!parsed.success) {

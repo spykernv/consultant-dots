@@ -5,7 +5,7 @@
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-**A multi-stage LLM pipeline that connects the dots of a tech-consulting business case: it turns a raw case into a structured, sourced answer, and it asks its clarifying questions before it solves anything.**
+**A tech-consulting case copilot that connects the dots. A fixed LLM pipeline turns a raw business case into a structured, sourced answer, and asks its clarifying questions before it solves anything. An agentic client-interview mode then trains the part AI does not automate: asking the right questions in front of a client and defending a recommendation under challenge.**
 
 You paste a case. Nine typed model calls later (about 2 minutes in my eval runs), you get:
 - a framing that keeps verified facts apart from assumptions;
@@ -18,11 +18,14 @@ You paste a case. Nine typed model calls later (about 2 minutes in my eval runs)
 
 A *challenge* mode then critiques your own answer like a demanding interviewer and quotes your exact words.
 
+A *client interview* mode puts you in front of a simulated client first. You have 8 rounds to ask the questions that unlock the case. The client only answers what you ask, and pushes back when you jump to a solution. A debrief and a score computed in code follow. ([Client interview mode](#client-interview-mode))
+
 **What makes it more than a prompt**
 - **A typed contract per stage.** Each stage is a Zod schema compiled to a strict JSON Schema that the model must fill. The result is validated again before use. ([strict-schema.ts](src/lib/schemas/strict-schema.ts), [run-stage.ts](src/lib/pipeline/run-stage.ts))
 - **Grounding checked in code.** Every "fact" must quote the case. A Unicode-aware matcher checks the quote, and anything it cannot find is demoted to an assumption. ([brief.ts](src/lib/prompts/brief.ts), [normalize.ts](src/lib/pipeline/normalize.ts))
 - **A human-in-the-loop gate.** The stage graph stops after the clarifying questions. Nothing downstream runs until you answer them or accept their default assumptions. ([machine.ts](src/lib/store/machine.ts))
 - **The model describes, the code renders.** Diagrams are typed graphs compiled to Mermaid, and the value × feasibility ranking is computed, not generated. ([to-mermaid.ts](src/lib/diagram/to-mermaid.ts), [priority.ts](src/lib/diagram/priority.ts))
+- **Agentic only where the path stops being deterministic.** The analysis is a fixed graph. The client conversation is an agent loop, because its next step depends on what the candidate says. The code keeps the rules there too: a round limit, what the client may reveal, when the interview ends. ([Client interview mode](#client-interview-mode))
 - **Two engines, one contract.** By default every stage runs on the Claude Code CLI with your existing Claude login, so a subscriber pays nothing extra. An optional Claude API engine (official TypeScript SDK, structured outputs, prompt caching) runs the same prompts per token. ([claude-code.ts](src/lib/engine/claude-code.ts), [claude-api.ts](src/lib/engine/claude-api.ts))
 - **Measured, not asserted.** An eval harness runs the sample cases end to end through the app's own state machine. It scores the guardrails, and scores the interviewer critique against labelled answers next to an answer-blind baseline. ([Evaluation](#evaluation))
 - **Runs without an account.** A replay engine streams recorded real runs, so the demo and CI need no login and no API key. ([mock.ts](src/lib/engine/mock.ts))
@@ -52,6 +55,13 @@ I wanted a tool that **enforces that discipline instead of just generating prose
 
 The same discipline is what a good technical discovery looks like: ask before you solve, write down what you are assuming, and start with a pilot whose success you can measure.
 
+Building it changed how I see the job. Once a model drafts a sound analysis in two minutes, analysis and synthesis are no longer where a consultant makes the difference. The difference is made in the room with the client:
+- the questions that change the answer;
+- the value levers nobody had put on the table;
+- a recommendation that holds when the client pushes back.
+
+So the app does both: it produces the analysis, and it lets you rehearse the conversation it cannot have for you.
+
 ## What it does
 
 | Step | What you get |
@@ -66,6 +76,7 @@ The same discipline is what a good technical discovery looks like: ask before yo
 | **Target & roadmap** | Target architecture, phased roadmap, pilot scope, KPIs with a baseline and a target, risks with mitigations |
 | **Oral pitch** | A 2–4 minute structured restitution |
 | **Challenge** | An interviewer critique of *your* answer. Each issue is tied to one of 10 consulting "reflexes" (E1–E10). It quotes your exact words when the issue is in the text (quotes are verified in code; omissions carry none), and comes with the follow-up question and a better phrasing |
+| **Client interview** *(optional mode)* | A simulated client, for at most 8 rounds, before any analysis is shown. The model chooses each reply; the code enforces the rules. Then a debrief on your messages and a score out of 100 |
 | **Export** | Full Markdown, `.mmd` diagrams, and a print-ready report (saved as PDF from the browser's print dialog) that opens with an editable 5-line synthesis |
 
 <table>
@@ -118,6 +129,21 @@ Browser (zustand state machine)
 
 The model's output is treated as untrusted input until it has passed Zod and the normalizer.
 
+## Client interview mode
+
+**Agentic where the path stops being deterministic.** The analysis stays a fixed graph: its steps are known before the run, so a DAG keeps it cheap, fast and testable. A client interview has no such path, because what happens next depends on what the candidate just said. That is where the app hands the decision to the model, and only there. On each turn the model chooses one move (clarify, probe, challenge, redirect or wrap up) and which client answers to give. The code keeps the rules.
+
+This mode trains the part of the job the analysis cannot do for you ([Why I built it](#why-i-built-it)): the questions you ask the client, the value levers you find, and how your ideas hold up when the client challenges them.
+
+How one interview runs:
+- **What the client knows.** The code builds a fact sheet from the frame and questions stages: the case's facts and an answer to each clarification question. The pipeline stops at the clarification gate as usual, so the diagnosis, the options and the recommendation do not exist yet. Neither the client nor the candidate can see them.
+- **One model call per turn** (`POST /api/interview`, streamed like a stage, strict JSON output). The same engines run it: Claude Code by default, the API engine, or the replay engine for the demo.
+- **A synthesis exercise by design.** Each candidate message is capped at 1,200 characters, as in front of a real client: you have to say what matters, briefly. The UI says so next to the counter.
+- **Rules enforced in code, not asked of the model.** At most 8 rounds. The client cannot close before round 3 and always closes at the last round. Answer ids outside the fact sheet are dropped, at most two client answers are credited per turn (so "tell me everything" does not inflate the score), and replies are capped. Figures that appear in neither the case, the fact sheet nor the candidate's messages are flagged. The candidate's text cannot open or close the prompt's blocks.
+- **Debrief and score.** The debrief reuses the challenge stage (reflexes E1–E10) on the candidate's messages, with only the answers the client actually gave counted as answered. The score is computed in code, so it can be checked by hand: 60 % from the debrief's level, 40 % from the share of key questions answered by the client, minus 5 points per blocking flag. « Voir l'analyse complète » then opens the regular workspace, built on what the client said.
+
+To try it without any account, check **« Mode entretien client »** before clicking **« Démo sans IA »**: a scripted client replays recorded replies, and the debrief is a recording too.
+
 ## Design decisions and lessons learned
 
 - **Verify in code what the model cannot be trusted to self-report.** A model asked to cite its sources sometimes cites them a little loosely. Checking the quotes deterministically and demoting what fails gives a FACT badge that means something precise: the quote is in the case.
@@ -125,6 +151,7 @@ The model's output is treated as untrusted input until it has passed Zod and the
 - **Let the model describe and let the code render.** The model fills a typed graph and the code compiles it to Mermaid, so the model never writes diagram syntax. The value × feasibility chart is pure computation, so it updates instantly when the user edits the matrix.
 - **Staleness is a product feature.** Hashing each stage's inputs, reduced to the changes that matter, tells the user which sections no longer match their latest input, without re-running everything.
 - **A replay engine pays for itself.** Recorded runs gave a free demo, fast deterministic tests and a contract check for every schema change. They do not replace live evals: a replayed output cannot regress when a prompt changes, which is why `npm run eval` runs the real engine.
+- **Put the agent loop where the path stops being deterministic, and nowhere else.** Turning the whole pipeline into an agent would have made it slower, costlier and harder to test for no gain. The interview is the one place where the next step cannot be known in advance. Even there, the model only picks its move; the code limits the rounds, decides what the client may reveal and ends the interview.
 - **An eval needs a way to be wrong.** My first labelled set had only flawed answers, and an answer-blind list beat the critic on it. Adding strong control answers and that baseline is what turned the eval into a measurement.
 
 ## Engineering highlights
@@ -244,7 +271,7 @@ Full report: [evals/results/20261001-1800-cli.md](evals/results/20261001-1800-cl
 What remains on the API side:
 - **Repair instead of failing.** Today, an output that still fails Zod validation ends the stage, and the user retries by hand. One automatic retry that sends the Zod issues back is cheap.
 - **Run evals in batch.** Eval runs (cases × samples × prompt versions) are not latency-sensitive, so they belong on the Message Batches endpoint, at half price.
-- **Keep the analysis a fixed graph.** The analysis stages do not need an agent loop: a fixed DAG keeps cost, latency and tests predictable. The planned conversational interviewer is where a loop with tools would help, for example a tool that checks a quote or looks up fact F3.
+- **Keep the analysis a fixed graph.** The analysis stages do not need an agent loop: a fixed DAG keeps cost, latency and tests predictable. The client interview is the one place where the model chooses the next move. A loop with tools would help there next, for example a tool that checks a quote or looks up fact F3.
 
 ## Getting started
 
@@ -294,11 +321,12 @@ src/lib/prompts/     system prompt, per-stage instructions, case brief (F/A/Q/C 
 src/lib/playbooks/   10 domain analysis playbooks + a universal fallback
 src/lib/engine/      Claude Code bridge (process, stream parsing, errors), optional Claude API engine, mock engine
 src/lib/pipeline/    server-side stage runner, normalization (grounding, id checks), guardrail counters
+src/lib/interview/   client interview mode: contract, interviewer prompt, turn rules, client state, score
 src/lib/eval/        headless pipeline runner, metrics and report of the eval harness
 src/lib/store/       client state machine, orchestrator, autosave, matrix carry-over
 src/lib/diagram/     typed graph → Mermaid compiler, decision tree, value × feasibility placement
 src/lib/export/      Markdown, Mermaid and report exports
-src/components/      five-zone workspace (case, reasoning, diagrams, roadmap, oral & challenge), decision diagrams, report preview
+src/components/      five-zone workspace (case, reasoning, diagrams, roadmap, oral & challenge), client interview screen, decision diagrams, report preview
 fixtures/mock/       recorded real runs for the three sample cases (the demo replays the first; all three feed the tests)
 tests/               Vitest suite
 scripts/eval.ts      the `npm run eval` command
@@ -310,7 +338,9 @@ evals/               labelled answers for the challenge eval; results/ holds the
 - Whiteboard view (current state | problems | target | roadmap) with PNG export
 - The next eval iteration: hand-reviewed labels, harder cases, and a critic prompt tuned against the current numbers
 - Training mode with scoring over several cases
-- Conversational mock interviewer
+- Client interview, V2: native tool use for the interviewer. On the API engine this means the SDK's tool runner, with tools that look up a fact, verify a quote and record an observation. On the subscription engine, the same tools would come from an MCP server that Claude Code uses headless.
+- Client interview, V3: an evaluation with simulated candidates, run with the flawed and control answers that are already labelled. It would measure planted errors caught during the conversation, leaks of the solution, consistency of the client's answers with the fact sheet, and the cost per interview.
+- Client interview: scripted demos for the other two sample cases, and the transcript and debrief in the exports
 - English UI
 
 ## Privacy

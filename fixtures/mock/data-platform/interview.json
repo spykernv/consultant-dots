@@ -1,0 +1,50 @@
+[
+  {
+    "reply": "Ce que je veux, c'est piloter le groupe sur des chiffres que personne ne conteste en comité de direction. La priorité, c'est le reporting mensuel : marge, taux de service et OTD. Par quoi commenceriez-vous ?",
+    "action": "clarify",
+    "reveal": ["Q1"],
+    "done": false
+  },
+  {
+    "reply": "Attendez, vous parlez déjà d'outil. Mes contrôleurs passent 10 jours par mois dans Excel, mais nos vraies disputes portent sur les définitions. Selon vous, qu'est-ce qui fait que mes chiffres sont contestés ?",
+    "action": "challenge",
+    "reveal": [],
+    "done": false
+  },
+  {
+    "reply": "Chaque filiale défend aujourd'hui sa propre définition de la marge. Le DAF groupe est prêt à porter le sujet comme sponsor. Comment feriez-vous adopter une définition commune par les filiales ?",
+    "action": "clarify",
+    "reveal": ["Q3"],
+    "done": false
+  },
+  {
+    "reply": "En Allemagne, ce sont les données nominatives RH et clients qui ne peuvent pas sortir du pays. Pour le pilotage groupe, des agrégats anonymisés peuvent être partagés. Qu'est-ce que cela change à votre approche ?",
+    "action": "clarify",
+    "reveal": ["Q2"],
+    "done": false
+  },
+  {
+    "reply": "Nos trois ERP sont différents et nous n'avons aucun socle data commun. Pour le comité de direction, des chiffres mensuels suffisent, quotidiens à terme. Comment en tiendriez-vous compte ?",
+    "action": "clarify",
+    "reveal": ["Q4"],
+    "done": false
+  },
+  {
+    "reply": "Admettons. Je devrai défendre ce projet devant le comité de direction : concrètement, comment saurai-je que cela a fonctionné ?",
+    "action": "challenge",
+    "reveal": [],
+    "done": false
+  },
+  {
+    "reply": "Côté moyens, ma DSI ne compte que 15 personnes, et j'attends un premier résultat visible sous 4 à 6 mois. Alors, que me proposez-vous de lancer en premier, et avec quelles ressources ?",
+    "action": "clarify",
+    "reveal": ["Q5"],
+    "done": false
+  },
+  {
+    "reply": "Merci, je vois mieux votre démarche et par où commencer. Nous allons nous arrêter là : je vous ferai un retour rapidement.",
+    "action": "wrap_up",
+    "reveal": [],
+    "done": true
+  }
+]

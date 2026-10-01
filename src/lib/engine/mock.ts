@@ -24,8 +24,28 @@ export async function runMock(stage: StageId, caseId: string | null, req: Engine
     .map((id) => fixturePath(id, stage))
     .find((candidate) => existsSync(candidate));
   if (!file) throw new EngineError("engine_error", `Aucune sortie de démo enregistrée pour l'étape « ${stage} ».`);
+  return replay(JSON.parse(readFileSync(file, "utf8")) as unknown, req);
+}
 
-  const output = JSON.parse(readFileSync(file, "utf8")) as unknown;
+export function interviewFixturePath(caseId: string) {
+  return path.join(process.cwd(), "fixtures", "mock", caseId, "interview.json");
+}
+
+/** The scripted client of the demo: round N replays the Nth recorded turn, and the last one once the script runs out. */
+export async function runMockInterview(caseId: string | null, round: number, req: EngineRequest): Promise<EngineResult> {
+  const file = [caseId, DEFAULT_DEMO_CASE]
+    .filter((id): id is string => Boolean(id))
+    .map(interviewFixturePath)
+    .find((candidate) => existsSync(candidate));
+  const turns = file ? (JSON.parse(readFileSync(file, "utf8")) as unknown) : null;
+  if (!Array.isArray(turns) || turns.length === 0) {
+    throw new EngineError("engine_error", "Aucun entretien de démo enregistré pour ce case.");
+  }
+  return replay(turns[Math.min(Math.max(round, 1), turns.length) - 1], req);
+}
+
+/** Streams a recorded output with the same events and rhythm as a live run. */
+async function replay(output: unknown, req: EngineRequest): Promise<EngineResult> {
   const text = JSON.stringify(output);
 
   req.emit({ type: "status", phase: "thinking" });

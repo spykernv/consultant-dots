@@ -2,7 +2,7 @@
   "name": "consultant-dots",
   "version": "0.1.0",
   "private": true,
-  "description": "Multi-stage LLM pipeline that turns a tech-consulting business case into a structured, sourced answer: strict JSON Schema outputs, quotes verified in code and a human-in-the-loop clarification gate.",
+  "description": "Tech-consulting case copilot: a fixed LLM pipeline with typed outputs, quotes verified in code and a human-in-the-loop gate, plus an agentic client-interview mode and a live eval harness.",
   "license": "MIT",
   "engines": {
     "node": ">=24"

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { startAutosave } from "@/lib/store/autosave";
 import { useSession } from "@/lib/store/session-store";
 import { cn } from "@/lib/utils";
+import { InterviewRecap } from "@/components/interview/InterviewRecap";
+import { InterviewView } from "@/components/interview/InterviewView";
 import { CaseInput } from "./CaseInput";
 import { CasePanel } from "./CasePanel";
 import { DiagramsPanel } from "./DiagramsPanel";
@@ -24,6 +26,8 @@ function CenterZone() {
       notesKey="reasoning"
       status={<StageStatus stages={gatePassed ? ["diagnose", "options"] : ["questions"]} />}
     >
+      {/* Next to the questions the client answered: the debrief stays at hand to compare with the analysis. */}
+      <InterviewRecap />
       <QuestionsBlock />
       {gatePassed && <ReasoningBlock />}
     </Zone>
@@ -34,6 +38,7 @@ export default function Workspace() {
   const [hydrated, setHydrated] = useState(false);
   const started = useSession((s) => s.started);
   const gatePassed = useSession((s) => s.gatePassed);
+  const interviewOpen = useSession((s) => Boolean(s.interview && !s.interview.closed));
 
   useEffect(() => {
     void Promise.resolve(useSession.persist.rehydrate()).finally(() => setHydrated(true));
@@ -43,6 +48,15 @@ export default function Workspace() {
   useEffect(() => (hydrated ? startAutosave() : undefined), [hydrated]);
 
   if (!hydrated) return <div className="min-h-dvh bg-slate-50" />;
+  // The interview hides the analysis until the user asks for it: the candidate works from the conversation alone.
+  if (interviewOpen) {
+    return (
+      <div className="flex min-h-dvh flex-col bg-slate-50 lg:h-dvh">
+        <TopBar />
+        <InterviewView />
+      </div>
+    );
+  }
   if (!started) return <CaseInput />;
 
   return (
