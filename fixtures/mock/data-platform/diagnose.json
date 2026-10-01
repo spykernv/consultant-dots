@@ -1,0 +1,132 @@
+{
+  "framework": [
+    {
+      "step": "Prioriser les usages CODIR",
+      "backbone": "cadrage",
+      "focus": "Les décisions du CODIR fondées sur la marge, le taux de service et l'OTD.",
+      "keyQuestions": [
+        "Quelles décisions la DG prend-elle chaque mois avec ces chiffres ?",
+        "Quel délai de clôture et quel niveau de détail sont attendus ?"
+      ]
+    },
+    {
+      "step": "Cartographier données et acteurs",
+      "backbone": "diagnostic",
+      "focus": "Pour chaque KPI : l'ERP source, qui produit la donnée, qui en est propriétaire, et la qualité.",
+      "keyQuestions": [
+        "Quels retraitements Excel sont faits aujourd'hui, et par qui ?",
+        "Quels référentiels (produits, clients, sites) diffèrent entre filiales ?"
+      ]
+    },
+    {
+      "step": "Harmoniser définitions et gouvernance",
+      "backbone": "options",
+      "focus": "Définitions communes des KPIs, arbitrage par le DAF, un data owner par filiale.",
+      "keyQuestions": [
+        "Qui tranche en cas de désaccord entre filiales ?",
+        "Quels KPIs harmoniser en premier ?"
+      ]
+    },
+    {
+      "step": "Choisir le modèle d'architecture",
+      "backbone": "cible",
+      "focus": "Centralisé, fédéré ou hybride, selon la contrainte allemande et la capacité de la DSI.",
+      "keyQuestions": [
+        "Quelles données doivent vraiment être centralisées ?",
+        "Un batch mensuel puis quotidien suffit-il ?"
+      ]
+    },
+    {
+      "step": "Pilote sur une verticale",
+      "backbone": "pilote",
+      "focus": "Deux filiales, un KPI (ex. OTD), une définition commune, un pipeline, un tableau de bord.",
+      "keyQuestions": [
+        "Le pilote crée-t-il des fondations réutilisables ?",
+        "Quel KPI de réussite mesurer, par rapport à quelle situation de départ ?"
+      ]
+    },
+    {
+      "step": "Mesurer puis étendre",
+      "backbone": "scale",
+      "focus": "Délai de clôture, part de KPIs harmonisés, adoption du tableau de bord par le CODIR.",
+      "keyQuestions": [
+        "Les chiffres sont-ils encore contestés en comité de direction ?",
+        "Comment étendre à la troisième filiale et aux autres KPIs ?"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "dimension": "Source / Format",
+      "finding": "Trois ERP et trois outils de reporting hétérogènes, sans socle data commun supposé.",
+      "basis": [
+        "F1",
+        "F2",
+        "Q4"
+      ]
+    },
+    {
+      "dimension": "Qualité",
+      "finding": "Marge, taux de service et OTD ont des définitions différentes selon la filiale : les chiffres ne sont pas comparables.",
+      "basis": [
+        "F3",
+        "F6"
+      ]
+    },
+    {
+      "dimension": "Transformation",
+      "finding": "La consolidation se fait à la main sous Excel en 10 jours, sans traçabilité des retraitements.",
+      "basis": [
+        "F4",
+        "F5"
+      ]
+    },
+    {
+      "dimension": "Owner",
+      "finding": "Personne au groupe n'arbitre les définitions de KPIs : chaque filiale garde la sienne.",
+      "basis": [
+        "A3",
+        "Q3"
+      ]
+    },
+    {
+      "dimension": "Consumer / Usage",
+      "finding": "Usage prioritaire supposé : reporting mensuel du CODIR sur marge, taux de service et OTD.",
+      "basis": [
+        "Q1",
+        "F6"
+      ]
+    },
+    {
+      "dimension": "Données",
+      "finding": "Sans référentiels communs produits, clients et sites, croiser commercial et industriel reste très difficile.",
+      "basis": [
+        "A2"
+      ]
+    },
+    {
+      "dimension": "Contrainte",
+      "finding": "Les données nominatives RH et clients restent en Allemagne, mais des agrégats anonymisés peuvent remonter.",
+      "basis": [
+        "F7",
+        "Q2",
+        "A1"
+      ]
+    },
+    {
+      "dimension": "Producer / capacité",
+      "finding": "La DSI groupe (15 personnes) manque probablement de compétences data pour tout construire seule.",
+      "basis": [
+        "F8",
+        "A4"
+      ]
+    }
+  ],
+  "rootCauses": [
+    "Pas de gouvernance des KPIs : aucun propriétaire groupe ne tranche les définitions communes.",
+    "Pas de référentiels partagés (produits, clients, sites) entre les trois filiales.",
+    "Pas de chaîne de consolidation outillée : Excel manuel, sans traçabilité ni contrôle qualité.",
+    "Filiales autonomes et DSI groupe réduite : personne n'a le mandat et la capacité de porter l'harmonisation."
+  ],
+  "keyInsight": "Le problème est d'abord une question de définitions et de gouvernance : sans KPIs communs, une plateforme produirait plus vite des chiffres toujours contestés. Comme seuls des agrégats doivent remonter, rien n'impose de tout centraliser physiquement."
+}

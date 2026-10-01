@@ -1,0 +1,151 @@
+{
+  "reformulation": "Les conseillers perdent environ 3 minutes par appel à chercher une information peu fiable. L'assureur veut réduire ce temps et fiabiliser ses réponses, sans risque contractuel ni risque RGPD.",
+  "businessObjectives": [
+    {
+      "text": "Réduire la durée moyenne de traitement des appels, aujourd'hui de 9 minutes",
+      "source": "case"
+    },
+    {
+      "text": "Faire remonter la satisfaction client",
+      "source": "case"
+    },
+    {
+      "text": "Raccourcir la montée en compétence des nouveaux conseillers",
+      "source": "case"
+    },
+    {
+      "text": "Donner des réponses justes et cohérentes, sans engagement contractuel erroné",
+      "source": "case"
+    }
+  ],
+  "painPoints": [
+    "Près d'un tiers du temps d'appel passe dans la recherche d'information",
+    "Base documentaire volumineuse, souvent obsolète ou contradictoire",
+    "Satisfaction client en baisse",
+    "Turnover de 25 % par an, donc des formations qui s'allongent"
+  ],
+  "constraints": [
+    {
+      "text": "Le comité exécutif attend des résultats d'ici 6 mois",
+      "type": "timeline",
+      "source": "case"
+    },
+    {
+      "text": "Les réponses aux clients peuvent engager l'assureur sur le plan contractuel",
+      "type": "regulatory",
+      "source": "case"
+    },
+    {
+      "text": "Les données clients sont soumises au RGPD",
+      "type": "data_sensitivity",
+      "source": "case"
+    },
+    {
+      "text": "La qualité des réponses dépend d'une base documentaire aujourd'hui peu fiable",
+      "type": "dependencies",
+      "source": "case"
+    },
+    {
+      "text": "Compétences GenAI internes probablement limitées, d'où une dépendance aux éditeurs",
+      "type": "skills",
+      "source": "assumption"
+    }
+  ],
+  "stakeholders": [
+    {
+      "name": "Comité exécutif",
+      "role": "Porte l'ambition GenAI et décide",
+      "source": "case"
+    },
+    {
+      "name": "Conseillers du centre de relation client (800)",
+      "role": "Utilisateurs finaux, dont l'adoption conditionne la valeur",
+      "source": "case"
+    },
+    {
+      "name": "Clients assurés",
+      "role": "Impactés par la qualité et la rapidité des réponses",
+      "source": "case"
+    },
+    {
+      "name": "Direction juridique / conformité et DPO",
+      "role": "Valident le risque contractuel et la conformité RGPD",
+      "source": "assumption"
+    },
+    {
+      "name": "Propriétaires des contenus (produits, procédures)",
+      "role": "Responsables de la mise à jour de la base documentaire",
+      "source": "assumption"
+    },
+    {
+      "name": "Éditeurs de solutions GenAI",
+      "role": "Ont déjà fait plusieurs propositions, dont un chatbot autonome",
+      "source": "case"
+    }
+  ],
+  "facts": [
+    {
+      "id": "F1",
+      "text": "Le centre de relation client compte 800 conseillers",
+      "evidence": "Un assureur IARD compte 800 conseillers en centre de relation client"
+    },
+    {
+      "id": "F2",
+      "text": "Un appel dure en moyenne 9 minutes",
+      "evidence": "Le temps moyen de traitement d'un appel est de 9 minutes"
+    },
+    {
+      "id": "F3",
+      "text": "Près d'un tiers de ce temps sert à chercher l'information",
+      "evidence": "près d'un tiers passé à chercher l'information"
+    },
+    {
+      "id": "F4",
+      "text": "La base documentaire compte 15 000 pages",
+      "evidence": "une base documentaire de 15 000 pages"
+    },
+    {
+      "id": "F5",
+      "text": "Les contenus sont souvent obsolètes ou contradictoires",
+      "evidence": "souvent obsolète ou contradictoire"
+    },
+    {
+      "id": "F6",
+      "text": "Le turnover des conseillers atteint 25 % par an",
+      "evidence": "le turnover des conseillers est élevé (25 % par an)"
+    },
+    {
+      "id": "F7",
+      "text": "Le comité exécutif fixe une échéance à 6 mois",
+      "evidence": "dans la relation client d'ici 6 mois"
+    },
+    {
+      "id": "F8",
+      "text": "Un éditeur propose un chatbot qui répond directement aux clients",
+      "evidence": "un chatbot autonome qui répondrait directement aux clients"
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "A1",
+      "text": "Aucun propriétaire clair n'est chargé de mettre à jour chaque document",
+      "basis": "Contenus obsolètes et contradictoires (F5)"
+    },
+    {
+      "id": "A2",
+      "text": "La satisfaction et la durée d'appel ne sont pas mesurées par motif d'appel",
+      "basis": "Aucune donnée détaillée dans le cas"
+    },
+    {
+      "id": "A3",
+      "text": "Le poste conseiller s'appuie déjà sur un CRM et un outil de téléphonie à intégrer",
+      "basis": "Standard d'un centre de relation client"
+    },
+    {
+      "id": "A4",
+      "text": "Une partie de la formation porte sur la navigation dans la documentation",
+      "basis": "Lien fait par le cas entre turnover et formation"
+    }
+  ],
+  "premiseChallenge": "« Mettre de la GenAI » est un moyen. Le vrai objectif est de réduire le temps de recherche et de fiabiliser les réponses. Vu le risque contractuel, un chatbot autonome face aux clients ne va pas de soi."
+}

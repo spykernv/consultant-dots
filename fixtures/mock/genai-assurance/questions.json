@@ -1,0 +1,39 @@
+{
+  "questions": [
+    {
+      "id": "Q1",
+      "question": "Qui possède la base documentaire aujourd'hui, et qui peut valider une version de référence ?",
+      "whyItMatters": "Une IA branchée sur 15 000 pages obsolètes ou contradictoires donnera des réponses fausses.",
+      "decisionImpact": "Pilote sur un périmètre documentaire assaini vs chantier de remise à niveau documentaire préalable",
+      "defaultAssumption": "Pas de propriétaire clair : on nomme des référents métier et on assainit un seul domaine (ex. auto) pour le pilote."
+    },
+    {
+      "id": "Q2",
+      "question": "Quels motifs d'appel pèsent le plus en volume et en temps de recherche ?",
+      "whyItMatters": "Le pilote doit viser les appels où les 3 minutes de recherche se concentrent.",
+      "decisionImpact": "Choix du périmètre du pilote : quel produit, quels motifs, quelle équipe",
+      "defaultAssumption": "Quelques motifs (sinistres, garanties) concentrent la majorité du temps de recherche ; on les confirme avec les données de téléphonie et du CRM."
+    },
+    {
+      "id": "Q3",
+      "question": "Quelles réponses engagent contractuellement l'assureur, et quelle position ont la conformité et le DPO sur la GenAI ?",
+      "whyItMatters": "Cela fixe le niveau de risque acceptable et qui garde la main sur la réponse finale.",
+      "decisionImpact": "Assistant interne avec conseiller décisionnaire vs chatbot autonome face au client",
+      "defaultAssumption": "Garanties et indemnisation engagent l'assureur : le conseiller reste décisionnaire, le chatbot autonome est écarté pour le pilote."
+    },
+    {
+      "id": "Q4",
+      "question": "Quel poste de travail utilisent les conseillers (CRM, outils), et existe-t-il un cadre IT pour les LLM ?",
+      "whyItMatters": "Un outil hors du poste du conseiller ne sera pas adopté ; l'hébergement conditionne le RGPD.",
+      "decisionImpact": "Intégration dans le CRM vs outil à part ; LLM hébergé en UE ou dans le SI vs API publique",
+      "defaultAssumption": "CRM du marché, pas de cadre LLM : LLM hébergé en UE, sans données clients dans les requêtes du pilote."
+    },
+    {
+      "id": "Q5",
+      "question": "Qui porte l'initiative au comex, et quel résultat attend-il à 6 mois ?",
+      "whyItMatters": "« Mettre de la GenAI » n'est pas un objectif : il faut un sponsor et une cible chiffrée.",
+      "decisionImpact": "Critères de succès du pilote et décision de passage à l'échelle",
+      "defaultAssumption": "Sponsor : direction relation client ; cible : baisser le temps de traitement et le temps de montée en compétence, mesurés sur une référence avant/après."
+    }
+  ]
+}

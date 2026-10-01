@@ -1,0 +1,146 @@
+{
+  "reformulation": "La DG veut piloter le groupe avec des chiffres consolidés, fiables et rapides, partagés par les trois filiales.",
+  "businessObjectives": [
+    {
+      "text": "Disposer d'une vision consolidée et fiable de la performance groupe",
+      "source": "case"
+    },
+    {
+      "text": "Réduire fortement le délai de clôture du reporting mensuel (10 jours aujourd'hui)",
+      "source": "assumption"
+    },
+    {
+      "text": "Mettre fin aux contestations des chiffres en comité de direction grâce à des KPIs communs",
+      "source": "case"
+    },
+    {
+      "text": "Croiser les données commerciales et industrielles pour mieux décider",
+      "source": "case"
+    }
+  ],
+  "painPoints": [
+    "Consolidation manuelle sous Excel : environ 10 jours chaque mois",
+    "Chiffres régulièrement contestés en comité de direction",
+    "Définitions de marge, taux de service et OTD différentes selon les filiales",
+    "Données commerciales et industrielles très difficiles à croiser"
+  ],
+  "constraints": [
+    {
+      "text": "Certaines données RH et clients ne peuvent pas quitter l'Allemagne",
+      "type": "regulatory",
+      "source": "case"
+    },
+    {
+      "text": "DSI groupe réduite : 15 personnes pour porter le projet",
+      "type": "skills",
+      "source": "case"
+    },
+    {
+      "text": "Trois ERP et outils de reporting hétérogènes à connecter",
+      "type": "legacy",
+      "source": "case"
+    },
+    {
+      "text": "Filiales autonomes, harmonisation des KPIs à négocier entre elles",
+      "type": "organizational",
+      "source": "assumption"
+    }
+  ],
+  "stakeholders": [
+    {
+      "name": "DG groupe",
+      "role": "Sponsor, décide et consomme le reporting",
+      "source": "case"
+    },
+    {
+      "name": "Contrôle de gestion groupe",
+      "role": "Consolide aujourd'hui, utilisateur clé",
+      "source": "case"
+    },
+    {
+      "name": "Filiales France, Allemagne, Espagne",
+      "role": "Possèdent les données et les définitions locales",
+      "source": "case"
+    },
+    {
+      "name": "DSI groupe",
+      "role": "Construit et exploite la solution",
+      "source": "case"
+    },
+    {
+      "name": "Comité de direction",
+      "role": "Utilise et valide les chiffres",
+      "source": "case"
+    },
+    {
+      "name": "DPO / juridique Allemagne",
+      "role": "Valide les contraintes de résidence des données",
+      "source": "assumption"
+    }
+  ],
+  "facts": [
+    {
+      "id": "F1",
+      "text": "Le groupe compte trois filiales : France, Allemagne, Espagne",
+      "evidence": "organisé en trois filiales : France, Allemagne et Espagne"
+    },
+    {
+      "id": "F2",
+      "text": "Chaque filiale a son ERP et son reporting",
+      "evidence": "Chaque filiale a son propre ERP et ses propres outils de reporting"
+    },
+    {
+      "id": "F3",
+      "text": "Les définitions des KPIs varient selon la filiale",
+      "evidence": "Les définitions des KPIs (marge, taux de service, OTD) diffèrent"
+    },
+    {
+      "id": "F4",
+      "text": "La consolidation groupe se fait à la main sous Excel",
+      "evidence": "consolide les chiffres à la main dans Excel"
+    },
+    {
+      "id": "F5",
+      "text": "La consolidation mensuelle prend environ 10 jours",
+      "evidence": "cela prend environ 10 jours"
+    },
+    {
+      "id": "F6",
+      "text": "Les chiffres sont contestés en comité de direction",
+      "evidence": "les chiffres sont régulièrement contestés en comité de direction"
+    },
+    {
+      "id": "F7",
+      "text": "Des données RH et clients doivent rester en Allemagne",
+      "evidence": "certaines données RH et clients ne peuvent pas quitter l'Allemagne"
+    },
+    {
+      "id": "F8",
+      "text": "La DSI groupe compte 15 personnes",
+      "evidence": "La DSI groupe est une petite équipe de 15 personnes"
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "A1",
+      "text": "Le reporting groupe n'a besoin que de données agrégées, pas des données RH/clients nominatives",
+      "basis": "Pilotage de la performance = agrégats"
+    },
+    {
+      "id": "A2",
+      "text": "Aucun référentiel commun (produits, clients, sites) n'existe entre filiales",
+      "basis": "Croisement des données jugé très difficile"
+    },
+    {
+      "id": "A3",
+      "text": "Aucun propriétaire groupe des définitions de KPIs n'est désigné aujourd'hui",
+      "basis": "Définitions divergentes et chiffres contestés"
+    },
+    {
+      "id": "A4",
+      "text": "La DSI groupe manque de compétences data engineering pour tout construire seule",
+      "basis": "Équipe de 15 personnes, rôles multiples"
+    }
+  ],
+  "premiseChallenge": "La « data platform groupe » est un moyen : l'objectif est un pilotage fiable et partagé, qui passe d'abord par des KPIs harmonisés et une gouvernance claire."
+}

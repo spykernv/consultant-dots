@@ -1,0 +1,252 @@
+{
+  "principles": [
+    "Une décision explicite par application : retirer, garder, migrer, remplacer ou moderniser.",
+    "Le pilotage des lignes reste sur site : la production passe avant l'hébergement.",
+    "Retirer avant de migrer : on ne paie pas le transfert d'applications inutiles.",
+    "Chaque vague réutilise le même socle cloud et la même chaîne de déploiement.",
+    "Aucune vague n'est lancée sans baseline de coût et de délai de déploiement."
+  ],
+  "diagram": {
+    "direction": "LR",
+    "groups": [
+      {
+        "id": "sites",
+        "label": "5 sites de production",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "usine",
+        "label": "Périmètre usine temps réel",
+        "kind": "local_boundary",
+        "parentId": "sites"
+      },
+      {
+        "id": "cloud",
+        "label": "Cloud public",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "dcres",
+        "label": "Infogérance résiduelle réduite",
+        "kind": "zone",
+        "parentId": null
+      }
+    ],
+    "nodes": [
+      {
+        "id": "comite",
+        "label": "Comité portefeuille DSI-sites-finance",
+        "kind": "control",
+        "groupId": null,
+        "status": "new"
+      },
+      {
+        "id": "ref",
+        "label": "Référentiel du portefeuille",
+        "kind": "data",
+        "groupId": null,
+        "status": "new"
+      },
+      {
+        "id": "dirsite",
+        "label": "Directeurs de site",
+        "kind": "actor",
+        "groupId": "sites",
+        "status": "existing"
+      },
+      {
+        "id": "mes",
+        "label": "Socle industriel MES sur site",
+        "kind": "system",
+        "groupId": "sites",
+        "status": "changed"
+      },
+      {
+        "id": "lignes",
+        "label": "Lignes et automates",
+        "kind": "system",
+        "groupId": "usine",
+        "status": "assumption"
+      },
+      {
+        "id": "zero",
+        "label": "Zéro interruption production",
+        "kind": "constraint",
+        "groupId": "usine",
+        "status": "existing"
+      },
+      {
+        "id": "integ",
+        "label": "Intégration hybride sites-cloud",
+        "kind": "system",
+        "groupId": null,
+        "status": "new"
+      },
+      {
+        "id": "lz",
+        "label": "Socle cloud (landing zone)",
+        "kind": "system",
+        "groupId": "cloud",
+        "status": "new"
+      },
+      {
+        "id": "appscloud",
+        "label": "Applications migrées ou remplacées",
+        "kind": "system",
+        "groupId": "cloud",
+        "status": "changed"
+      },
+      {
+        "id": "cicd",
+        "label": "Chaîne de déploiement automatisée",
+        "kind": "process",
+        "groupId": null,
+        "status": "new"
+      },
+      {
+        "id": "residuel",
+        "label": "Legacy critique en attente",
+        "kind": "system",
+        "groupId": "dcres",
+        "status": "assumption"
+      },
+      {
+        "id": "retired",
+        "label": "Applications redondantes retirées",
+        "kind": "system",
+        "groupId": null,
+        "status": "retired"
+      },
+      {
+        "id": "partner",
+        "label": "Partenaire cloud puis équipe interne",
+        "kind": "actor",
+        "groupId": null,
+        "status": "new"
+      },
+      {
+        "id": "kpi",
+        "label": "Tableau de bord coûts et délais",
+        "kind": "output",
+        "groupId": null,
+        "status": "new"
+      }
+    ],
+    "edges": [
+      {
+        "from": "comite",
+        "to": "ref",
+        "label": "décide par application",
+        "style": "thick"
+      },
+      {
+        "from": "ref",
+        "to": "retired",
+        "label": "retirer d'abord",
+        "style": "solid"
+      },
+      {
+        "from": "ref",
+        "to": "appscloud",
+        "label": "vagues de migration",
+        "style": "thick"
+      },
+      {
+        "from": "ref",
+        "to": "residuel",
+        "label": "conserver temporairement",
+        "style": "dashed"
+      },
+      {
+        "from": "lz",
+        "to": "appscloud",
+        "label": "héberge",
+        "style": "solid"
+      },
+      {
+        "from": "dirsite",
+        "to": "mes",
+        "label": "utilisent",
+        "style": "solid"
+      },
+      {
+        "from": "mes",
+        "to": "lignes",
+        "label": "pilote localement",
+        "style": "thick"
+      },
+      {
+        "from": "lignes",
+        "to": "zero",
+        "label": null,
+        "style": "solid"
+      },
+      {
+        "from": "mes",
+        "to": "integ",
+        "label": "flux selon latence",
+        "style": "solid"
+      },
+      {
+        "from": "integ",
+        "to": "appscloud",
+        "label": null,
+        "style": "solid"
+      },
+      {
+        "from": "cicd",
+        "to": "appscloud",
+        "label": "déploie en jours",
+        "style": "solid"
+      },
+      {
+        "from": "partner",
+        "to": "lz",
+        "label": "construit puis transfère",
+        "style": "dashed"
+      },
+      {
+        "from": "appscloud",
+        "to": "kpi",
+        "label": "mesure",
+        "style": "solid"
+      },
+      {
+        "from": "kpi",
+        "to": "comite",
+        "label": "pilote la valeur",
+        "style": "solid"
+      }
+    ]
+  },
+  "keyChanges": [
+    {
+      "from": "« Tout migrer dans le cloud »",
+      "to": "Décision par application, cible hybride"
+    },
+    {
+      "from": "Cartographie partielle et ancienne",
+      "to": "Référentiel à jour avec propriétaires"
+    },
+    {
+      "from": "Datacenter entièrement infogéré",
+      "to": "Cloud + sites + périmètre résiduel réduit"
+    },
+    {
+      "from": "Déploiements manuels en semaines",
+      "to": "Chaîne automatisée, déploiements en jours"
+    },
+    {
+      "from": "5 versions MES non gouvernées",
+      "to": "Socle MES sur site gouverné"
+    }
+  ],
+  "operatingModel": [
+    "Un propriétaire métier nommé pour chaque application, responsable de sa décision cible.",
+    "Un comité mensuel DSI-directeurs de site-finance arbitre les vagues et le budget.",
+    "Un partenaire cloud au démarrage, avec un transfert planifié vers une équipe interne.",
+    "Les directeurs de site valident chaque bascule touchant la production (go/no-go)."
+  ]
+}

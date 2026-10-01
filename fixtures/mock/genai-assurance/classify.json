@@ -1,0 +1,9 @@
+{
+  "primaryDomain": "genai_ai",
+  "secondaryDomains": [
+    "data_management",
+    "caio_advisory"
+  ],
+  "confidence": 80,
+  "rationale": "Le vrai problème est métier : les conseillers perdent un tiers de leurs 9 minutes d'appel à chercher l'information dans une base documentaire obsolète, et le turnover est élevé. Cela appelle un cas d'usage GenAI encadré pour aider les conseillers, qui repose sur la qualité documentaire et sur une gouvernance du risque (engagement contractuel, RGPD)."
+}

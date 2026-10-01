@@ -1,0 +1,322 @@
+{
+  "options": [
+    {
+      "id": "O1",
+      "name": "Tout cloud en lift & shift",
+      "description": "Rehost massif des 120 applications en VM cloud avant la fin du contrat.",
+      "advantages": [
+        "Répond littéralement à la demande du DSI",
+        "Sortie du datacenter en un seul programme",
+        "Peu de modifications applicatives"
+      ],
+      "drawbacks": [
+        "Risque d'arrêt des lignes sur les applications de pilotage",
+        "Le legacy reste aussi coûteux à maintenir, dans une VM",
+        "Irréaliste en 18 mois sans inventaire des dépendances"
+      ],
+      "conditions": [
+        "Portefeuille déjà cartographié, avec peu de dépendances aux sites",
+        "Aucune exigence de latence usine"
+      ]
+    },
+    {
+      "id": "O2",
+      "name": "Cible hybride, décision par application",
+      "description": "Chaque application est conservée sur site, rehostée, replatformée, remplacée ou retirée selon des critères explicites.",
+      "advantages": [
+        "Protège les lignes : le pilotage reste au plus près des sites",
+        "Retire ou remplace avant de migrer : baisse réelle du run",
+        "Vagues calées sur les 18 mois, les applications critiques en dernier"
+      ],
+      "drawbacks": [
+        "Exige un inventaire rapide du portefeuille en amont",
+        "Coexistence cloud / sites / infogérance à gouverner",
+        "Plus exigeant en arbitrages avec les métiers"
+      ],
+      "conditions": [
+        "Prolongation partielle de l'infogérance négociable (Q4)",
+        "Propriétaires métier identifiés pour valider chaque décision"
+      ]
+    },
+    {
+      "id": "O3",
+      "name": "Renouveler l'infogérance, moderniser sur place",
+      "description": "Retain on-premise avec renégociation du contrat, puis automatisation des déploiements.",
+      "advantages": [
+        "Risque production minimal",
+        "Aucune migration sous contrainte de délai",
+        "Traite la lenteur des processus de déploiement (A3)"
+      ],
+      "drawbacks": [
+        "Ne baisse pas structurellement les coûts d'infrastructure",
+        "Dépendance à l'infogérant renforcée",
+        "Ne répond pas à l'ambition du DSI"
+      ],
+      "conditions": [
+        "Business case cloud défavorable une fois chiffré (A5)",
+        "Infogérant prêt à baisser ses prix significativement"
+      ]
+    }
+  ],
+  "comparison": {
+    "constraints": [
+      {
+        "label": "Zéro interruption des lignes de production",
+        "basis": [
+          "F7",
+          "A2",
+          "Q2"
+        ],
+        "fits": [
+          {
+            "optionId": "O1",
+            "fit": "fail",
+            "note": "Pilotage des lignes migré loin des automates"
+          },
+          {
+            "optionId": "O2",
+            "fit": "pass",
+            "note": "Pilotage conservé sur site, migré en dernier"
+          },
+          {
+            "optionId": "O3",
+            "fit": "pass",
+            "note": "Rien ne bouge côté usines"
+          }
+        ]
+      },
+      {
+        "label": "Datacenter libéré à l'échéance de 18 mois",
+        "basis": [
+          "F3",
+          "Q4",
+          "A4",
+          "A1"
+        ],
+        "fits": [
+          {
+            "optionId": "O1",
+            "fit": "fail",
+            "note": "120 applications sans inventaire : intenable en 18 mois"
+          },
+          {
+            "optionId": "O2",
+            "fit": "partial",
+            "note": "Périmètre critique prolongé chez l'infogérant"
+          },
+          {
+            "optionId": "O3",
+            "fit": "partial",
+            "note": "Uniquement si le contrat est renouvelé"
+          }
+        ]
+      }
+    ],
+    "criteria": [
+      {
+        "label": "Maîtrise du risque production",
+        "scores": [
+          {
+            "optionId": "O1",
+            "score": 1
+          },
+          {
+            "optionId": "O2",
+            "score": 4
+          },
+          {
+            "optionId": "O3",
+            "score": 5
+          }
+        ]
+      },
+      {
+        "label": "Baisse durable du coût de run",
+        "scores": [
+          {
+            "optionId": "O1",
+            "score": 2
+          },
+          {
+            "optionId": "O2",
+            "score": 4
+          },
+          {
+            "optionId": "O3",
+            "score": 2
+          }
+        ]
+      },
+      {
+        "label": "Accélération des déploiements",
+        "scores": [
+          {
+            "optionId": "O1",
+            "score": 2
+          },
+          {
+            "optionId": "O2",
+            "score": 4
+          },
+          {
+            "optionId": "O3",
+            "score": 3
+          }
+        ]
+      },
+      {
+        "label": "Portable par l'équipe actuelle",
+        "scores": [
+          {
+            "optionId": "O1",
+            "score": 2
+          },
+          {
+            "optionId": "O2",
+            "score": 3
+          },
+          {
+            "optionId": "O3",
+            "score": 4
+          }
+        ]
+      }
+    ]
+  },
+  "recommendation": {
+    "optionId": "O2",
+    "statement": "Recommander une cible hybride : décider application par application, retirer avant de migrer, et garder le pilotage des lignes sur site.",
+    "rationale": "On renonce au « tout cloud » en 18 mois, mais on sécurise la production et on obtient une vraie baisse du run. Le compromis : garder un périmètre réduit chez l'infogérant au-delà de l'échéance.",
+    "dependsOn": [
+      "Q2",
+      "Q4",
+      "A1",
+      "A2",
+      "A5"
+    ],
+    "pivots": [
+      {
+        "basis": "Q4",
+        "question": "Prolongation partielle de l'infogérance possible ?",
+        "assumed": "Oui, pour les applications critiques",
+        "ifInstead": "Non, sortie totale à 18 mois",
+        "thenOptionId": null,
+        "consequence": "Critiques rapatriées sur une infrastructure locale aux sites, vagues accélérées."
+      },
+      {
+        "basis": "A5",
+        "question": "Le business case cloud est-il favorable ?",
+        "assumed": "Oui, baisse du run une fois chiffrée",
+        "ifInstead": "Non, cloud plus cher que l'existant",
+        "thenOptionId": "O3",
+        "consequence": "Renégocier l'infogérance et investir d'abord dans l'automatisation des déploiements."
+      },
+      {
+        "basis": "A2",
+        "question": "Le pilotage des lignes dépend-il des sites ?",
+        "assumed": "Oui, automates et réseau usine",
+        "ifInstead": "Non, aucune contrainte de latence",
+        "thenOptionId": null,
+        "consequence": "Part cloud plus large, mais la décision reste prise application par application."
+      }
+    ]
+  },
+  "targetBlocks": [
+    {
+      "id": "B1",
+      "name": "Référentiel du portefeuille",
+      "role": "Inventaire des 120 applications, avec propriétaire, criticité, dépendances et décision cible."
+    },
+    {
+      "id": "B2",
+      "name": "Socle cloud (landing zone)",
+      "role": "Réseau, sécurité, identités et supervision réutilisés par toutes les vagues."
+    },
+    {
+      "id": "B3",
+      "name": "Socle industriel sur site",
+      "role": "MES et pilotage des lignes hébergés au plus près des 5 sites, sans interruption."
+    },
+    {
+      "id": "B4",
+      "name": "Intégration hybride sites-cloud",
+      "role": "Flux entre usines et cloud, choisis selon la latence et les volumes."
+    },
+    {
+      "id": "B5",
+      "name": "Chaîne de déploiement automatisée",
+      "role": "CI/CD pour passer de plusieurs semaines à quelques jours."
+    },
+    {
+      "id": "B6",
+      "name": "Gouvernance et montée en compétences",
+      "role": "Comité DSI-sites-finance pour arbitrer, partenaire cloud puis transfert aux équipes internes."
+    }
+  ],
+  "initiatives": [
+    {
+      "name": "Application support non critique",
+      "value": 3,
+      "feasibility": 4,
+      "risk": 2,
+      "timeToValue": 4,
+      "reuse": 5,
+      "verdict": "pilot",
+      "comment": "Replatform d'une application de gestion : pose la landing zone, le CI/CD et mesure la baseline."
+    },
+    {
+      "name": "Retrait des applications redondantes",
+      "value": 4,
+      "feasibility": 4,
+      "risk": 1,
+      "timeToValue": 5,
+      "reuse": 3,
+      "verdict": "next",
+      "comment": "Moins d'applications à migrer : gain rapide sur le run et sur le délai."
+    },
+    {
+      "name": "Vague 1 : rehost des applications support",
+      "value": 3,
+      "feasibility": 4,
+      "risk": 2,
+      "timeToValue": 3,
+      "reuse": 4,
+      "verdict": "next",
+      "comment": "Vide le datacenter en réutilisant le socle posé par le pilote."
+    },
+    {
+      "name": "Harmonisation du MES entre sites",
+      "value": 5,
+      "feasibility": 2,
+      "risk": 4,
+      "timeToValue": 2,
+      "reuse": 4,
+      "verdict": "later",
+      "comment": "Forte valeur, mais cinq versions à converger : programme à part, avec les directeurs de site."
+    },
+    {
+      "name": "Migration cloud du pilotage des lignes",
+      "value": 2,
+      "feasibility": 1,
+      "risk": 5,
+      "timeToValue": 1,
+      "reuse": 2,
+      "verdict": "avoid",
+      "comment": "Latence et zéro interruption : ces applications restent sur site."
+    }
+  ],
+  "traps": [
+    {
+      "reflex": "E10",
+      "whyHere": "« Tout migrer » ignore les applications de pilotage des lignes, qui doivent rester sur site."
+    },
+    {
+      "reflex": "E7",
+      "whyHere": "Un lift & shift pressé par les 18 mois déplace le legacy sans réduire sa dette."
+    },
+    {
+      "reflex": "E6",
+      "whyHere": "Sans business case (A5), il faut mesurer le coût de run et le délai de déploiement actuels avant de promettre une baisse."
+    }
+  ]
+}

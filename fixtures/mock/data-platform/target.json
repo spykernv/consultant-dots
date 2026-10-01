@@ -1,0 +1,271 @@
+{
+  "principles": [
+    "Définir le KPI avant de construire la donnée : pas de pipeline sans définition validée.",
+    "Centraliser les agrégats, pas les données : le nominatif reste dans sa filiale.",
+    "Un seul chiffre officiel par KPI, calculé une seule fois et traçable jusqu'à l'ERP.",
+    "Chaque KPI a un propriétaire métier nommé ; la DSI outille sans arbitrer.",
+    "Avancer par tranches verticales complètes, réutilisables pour chaque nouveau KPI."
+  ],
+  "diagram": {
+    "direction": "LR",
+    "groups": [
+      {
+        "id": "fr",
+        "label": "Filiale France",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "de",
+        "label": "Filiale Allemagne",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "de_rgpd",
+        "label": "Données nominatives Allemagne",
+        "kind": "local_boundary",
+        "parentId": "de"
+      },
+      {
+        "id": "es",
+        "label": "Filiale Espagne",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "grp",
+        "label": "Socle groupe",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "gouv",
+        "label": "Gouvernance des KPIs",
+        "kind": "zone",
+        "parentId": null
+      }
+    ],
+    "nodes": [
+      {
+        "id": "erp_fr",
+        "label": "ERP France",
+        "kind": "system",
+        "groupId": "fr",
+        "status": "existing"
+      },
+      {
+        "id": "pipe_fr",
+        "label": "Pipeline batch France",
+        "kind": "process",
+        "groupId": "fr",
+        "status": "new"
+      },
+      {
+        "id": "erp_de",
+        "label": "ERP Allemagne",
+        "kind": "system",
+        "groupId": "de_rgpd",
+        "status": "existing"
+      },
+      {
+        "id": "rh_de",
+        "label": "Données RH/clients nominatives",
+        "kind": "data",
+        "groupId": "de_rgpd",
+        "status": "existing"
+      },
+      {
+        "id": "pipe_de",
+        "label": "Calcul local, agrégats anonymisés",
+        "kind": "control",
+        "groupId": "de",
+        "status": "new"
+      },
+      {
+        "id": "erp_es",
+        "label": "ERP Espagne",
+        "kind": "system",
+        "groupId": "es",
+        "status": "existing"
+      },
+      {
+        "id": "pipe_es",
+        "label": "Pipeline batch Espagne",
+        "kind": "process",
+        "groupId": "es",
+        "status": "new"
+      },
+      {
+        "id": "gov",
+        "label": "DAF sponsor, data owners",
+        "kind": "control",
+        "groupId": "gouv",
+        "status": "assumption"
+      },
+      {
+        "id": "dict",
+        "label": "Dictionnaire KPI commun",
+        "kind": "control",
+        "groupId": "gouv",
+        "status": "new"
+      },
+      {
+        "id": "ref",
+        "label": "Référentiels produits, clients, sites",
+        "kind": "data",
+        "groupId": "grp",
+        "status": "new"
+      },
+      {
+        "id": "socle",
+        "label": "Socle agrégé groupe",
+        "kind": "data",
+        "groupId": "grp",
+        "status": "new"
+      },
+      {
+        "id": "cdg",
+        "label": "Contrôle de gestion groupe",
+        "kind": "actor",
+        "groupId": "grp",
+        "status": "changed"
+      },
+      {
+        "id": "excel",
+        "label": "Consolidation manuelle Excel",
+        "kind": "process",
+        "groupId": "grp",
+        "status": "retired"
+      },
+      {
+        "id": "dash",
+        "label": "Tableau de bord CODIR",
+        "kind": "output",
+        "groupId": "grp",
+        "status": "new"
+      },
+      {
+        "id": "codir",
+        "label": "DG et comité de direction",
+        "kind": "actor",
+        "groupId": null,
+        "status": "existing"
+      }
+    ],
+    "edges": [
+      {
+        "from": "erp_fr",
+        "to": "pipe_fr",
+        "label": "extraction batch",
+        "style": "solid"
+      },
+      {
+        "from": "erp_es",
+        "to": "pipe_es",
+        "label": "extraction batch",
+        "style": "solid"
+      },
+      {
+        "from": "erp_de",
+        "to": "pipe_de",
+        "label": "calcul local",
+        "style": "solid"
+      },
+      {
+        "from": "rh_de",
+        "to": "pipe_de",
+        "label": "anonymisation",
+        "style": "dashed"
+      },
+      {
+        "from": "pipe_fr",
+        "to": "socle",
+        "label": "agrégats KPI",
+        "style": "thick"
+      },
+      {
+        "from": "pipe_es",
+        "to": "socle",
+        "label": "agrégats KPI",
+        "style": "thick"
+      },
+      {
+        "from": "pipe_de",
+        "to": "socle",
+        "label": "agrégats anonymisés",
+        "style": "thick"
+      },
+      {
+        "from": "gov",
+        "to": "dict",
+        "label": "arbitre",
+        "style": "solid"
+      },
+      {
+        "from": "dict",
+        "to": "socle",
+        "label": "règles de calcul",
+        "style": "solid"
+      },
+      {
+        "from": "ref",
+        "to": "socle",
+        "label": "correspondances",
+        "style": "solid"
+      },
+      {
+        "from": "cdg",
+        "to": "socle",
+        "label": "contrôle qualité",
+        "style": "solid"
+      },
+      {
+        "from": "socle",
+        "to": "dash",
+        "label": null,
+        "style": "thick"
+      },
+      {
+        "from": "dash",
+        "to": "codir",
+        "label": "chiffre unique",
+        "style": "thick"
+      },
+      {
+        "from": "excel",
+        "to": "dash",
+        "label": "remplacé par",
+        "style": "dashed"
+      }
+    ]
+  },
+  "keyChanges": [
+    {
+      "from": "Définitions KPI propres à chaque filiale",
+      "to": "Dictionnaire KPI commun et versionné"
+    },
+    {
+      "from": "Consolidation Excel en 10 jours",
+      "to": "Pipelines batch automatisés et contrôlés"
+    },
+    {
+      "from": "Personne n'arbitre les chiffres",
+      "to": "DAF sponsor, data owner par KPI"
+    },
+    {
+      "from": "Extractions brutes vers le siège",
+      "to": "Agrégats seuls, nominatif reste local"
+    },
+    {
+      "from": "Chiffres débattus en CODIR",
+      "to": "Tableau de bord unique et traçable"
+    }
+  ],
+  "operatingModel": [
+    "Comité KPI mensuel présidé par le DAF : il valide et fait évoluer les définitions (à confirmer, Q3).",
+    "Un data owner métier par filiale et par KPI, responsable de la qualité de ses agrégats.",
+    "Le contrôle de gestion passe de la consolidation à l'analyse et au contrôle qualité.",
+    "Adoption : le CODIR ne discute plus que les chiffres du tableau de bord commun."
+  ]
+}

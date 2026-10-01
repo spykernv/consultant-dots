@@ -1,0 +1,191 @@
+{
+  "phases": [
+    {
+      "name": "Phase 1 — Cadrage & diagnostic",
+      "timing": "0–1 mois",
+      "objective": "Confirmer les usages CODIR et cartographier les données du pilote OTD.",
+      "actions": [
+        "Valider avec la DG les décisions CODIR prioritaires (Q1).",
+        "Cartographier les sources OTD dans les ERP France et Espagne.",
+        "Mesurer la baseline : délai de clôture, étapes manuelles, contestations.",
+        "Valider avec le DPO allemand le périmètre des agrégats anonymisés (Q2)."
+      ],
+      "deliverables": [
+        "Cartographie source → donnée → owner → consommateur pour l'OTD",
+        "Baseline chiffrée du reporting mensuel"
+      ],
+      "decisions": [
+        "DAF groupe confirmé comme sponsor (Q3)",
+        "Périmètre du pilote : OTD France–Espagne"
+      ],
+      "dependencies": [
+        "Disponibilité des contrôleurs de gestion filiales",
+        "Accès aux ERP France et Espagne"
+      ],
+      "kpis": [
+        "Baseline mesurée et validée par le DAF",
+        "Data owners OTD nommés dans les 2 filiales"
+      ]
+    },
+    {
+      "name": "Phase 2 — Gouvernance & design du pilote",
+      "timing": "1–2 mois",
+      "objective": "Poser une définition commune de l'OTD et la cible hybride du pilote.",
+      "actions": [
+        "Lancer le comité KPI : DAF + data owners par filiale (B1).",
+        "Arbitrer la définition commune de l'OTD, versionnée (B2).",
+        "Rédiger le contrat d'interface : format, fréquence, contrôles qualité (B4).",
+        "Choisir l'intégration : batch mensuel, puis quotidien si besoin (Q4)."
+      ],
+      "deliverables": [
+        "Dictionnaire KPI v1 : OTD",
+        "Contrat d'interface et schéma d'architecture hybride"
+      ],
+      "decisions": [
+        "Définition OTD signée par les filiales",
+        "Choix outillage et appui externe (A4, Q5)"
+      ],
+      "dependencies": [
+        "Mandat DG donné au DAF pour trancher",
+        "Budget pilote validé"
+      ],
+      "kpis": [
+        "Définition OTD validée par 2 filiales sur 2"
+      ]
+    },
+    {
+      "name": "Phase 3 — Pilote OTD France–Espagne",
+      "timing": "2–5 mois",
+      "objective": "Livrer une verticale complète : ERP → OTD harmonisé → tableau de bord CODIR.",
+      "actions": [
+        "Construire les pipelines batch France et Espagne (B4).",
+        "Mettre en place le socle agrégé avec contrôles qualité et traçabilité (B5).",
+        "Construire la table de correspondance sites et clients du périmètre (B3).",
+        "Présenter l'OTD pilote en CODIR, en parallèle d'Excel (B6)."
+      ],
+      "deliverables": [
+        "Pipelines OTD industrialisés et documentés",
+        "Tableau de bord CODIR OTD France–Espagne"
+      ],
+      "decisions": [
+        "Go / no-go passage à l'échelle",
+        "Arrêt du calcul Excel de l'OTD"
+      ],
+      "dependencies": [
+        "Qualité des données de livraison dans les ERP",
+        "Implication du contrôle de gestion groupe"
+      ],
+      "kpis": [
+        "OTD produit en J+2",
+        "Zéro contestation OTD en CODIR"
+      ]
+    },
+    {
+      "name": "Phase 4 — Passage à l'échelle",
+      "timing": "5–12 mois",
+      "objective": "Étendre à l'Allemagne, à la marge et au taux de service.",
+      "actions": [
+        "Ajouter l'Allemagne : calcul local, remontée d'agrégats anonymisés.",
+        "Harmoniser marge et taux de service via le même comité KPI.",
+        "Étendre les référentiels produits, clients, sites aux 3 filiales.",
+        "Transférer l'exploitation à la DSI groupe avec montée en compétences."
+      ],
+      "deliverables": [
+        "Tableau de bord CODIR 3 KPIs, 3 filiales",
+        "Dictionnaire KPI v2 et référentiels partagés"
+      ],
+      "decisions": [
+        "Ordre d'extension des KPIs",
+        "Modèle d'exploitation run DSI / prestataire"
+      ],
+      "dependencies": [
+        "Validation DPO et comité d'entreprise allemand",
+        "Succès mesuré du pilote"
+      ],
+      "kpis": [
+        "Délai de clôture < 3 jours",
+        "100 % des KPIs CODIR avec définition commune"
+      ]
+    }
+  ],
+  "pilot": {
+    "initiative": "OTD harmonisé France–Espagne",
+    "scope": "2 filiales (France, Espagne) → 1 dataset livraisons → 1 définition OTD → 1 pipeline batch → 1 tableau de bord CODIR",
+    "why": "KPI contesté en CODIR et sans données nominatives : on évite la contrainte allemande. Il teste toute la chaîne : gouvernance, référentiel sites, pipeline, tableau de bord. Livrable en 4–6 mois avec la DSI et un appui externe.",
+    "successCriteria": [
+      "OTD France–Espagne produit en J+2 au lieu d'environ 10 jours",
+      "Aucune contestation de l'OTD sur 2 CODIR consécutifs",
+      "Excel abandonné pour l'OTD par le contrôle de gestion groupe"
+    ],
+    "reusableFoundations": [
+      "Comité KPI et rôles de data owner, réutilisables pour marge et taux de service",
+      "Contrat d'interface et socle agrégé, prêts pour l'Allemagne",
+      "Premières tables de correspondance sites et clients"
+    ]
+  },
+  "kpis": [
+    {
+      "name": "Délai de production du reporting mensuel",
+      "type": "business",
+      "baseline": "≈ 10 jours (F5)",
+      "target": "J+2 sur le pilote, < 3 jours groupe à 12 mois"
+    },
+    {
+      "name": "Chiffres contestés en CODIR par séance",
+      "type": "business",
+      "baseline": "Contestations régulières (F6), nombre à mesurer au cadrage",
+      "target": "Zéro sur les KPIs harmonisés"
+    },
+    {
+      "name": "Part des KPIs CODIR avec définition commune validée",
+      "type": "adoption",
+      "baseline": "0 % (F3)",
+      "target": "OTD à 3 mois, 100 % des 3 KPIs à 12 mois"
+    },
+    {
+      "name": "Usage du tableau de bord commun vs Excel",
+      "type": "adoption",
+      "baseline": "100 % Excel (F4)",
+      "target": "Contrôle de gestion et CODIR utilisent le tableau de bord seul"
+    },
+    {
+      "name": "Score qualité des données OTD (complétude, cohérence)",
+      "type": "technical",
+      "baseline": "à mesurer au cadrage",
+      "target": "> 95 % des contrôles passés à chaque chargement"
+    },
+    {
+      "name": "Données nominatives allemandes sorties du pays",
+      "type": "risk",
+      "baseline": "à mesurer au cadrage",
+      "target": "Zéro, validé par audit DPO"
+    }
+  ],
+  "risks": [
+    {
+      "risk": "Les filiales refusent une définition OTD commune qui dégrade leur score.",
+      "impact": "Pilote bloqué, chiffres toujours contestés en CODIR.",
+      "mitigation": "Mandat DG au DAF pour trancher ; afficher l'ancien et le nouvel OTD en transition."
+    },
+    {
+      "risk": "Des agrégats allemands permettent de ré-identifier des clients ou salariés.",
+      "impact": "Non-conformité RGPD et conflit avec le comité d'entreprise.",
+      "mitigation": "Seuils d'agrégation validés par le DPO avant toute remontée."
+    },
+    {
+      "risk": "La DSI de 15 personnes ne peut pas exploiter la solution après le pilote.",
+      "impact": "Dépendance au prestataire et socle non maintenu.",
+      "mitigation": "Binômes DSI–prestataire dès la phase 3, transfert planifié en phase 4."
+    },
+    {
+      "risk": "Absence de référentiels communs sites et clients entre ERP.",
+      "impact": "Croisement commercial / industriel impossible, OTD incomparable.",
+      "mitigation": "Tables de correspondance limitées au pilote, owner nommé par filiale."
+    },
+    {
+      "risk": "Le contrôle de gestion maintient Excel en parallèle.",
+      "impact": "Double travail, aucun gain de délai mesurable.",
+      "mitigation": "Coconstruire le tableau de bord avec eux ; date d'arrêt d'Excel décidée."
+    }
+  ]
+}

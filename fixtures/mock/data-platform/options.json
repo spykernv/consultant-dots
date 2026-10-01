@@ -1,0 +1,321 @@
+{
+  "options": [
+    {
+      "id": "O1",
+      "name": "Plateforme groupe centralisée",
+      "description": "Toutes les données des trois ERP copiées dans un entrepôt groupe unique.",
+      "advantages": [
+        "Croisement commercial / industriel le plus simple",
+        "Un seul modèle de données et un seul outil",
+        "Exploitation centralisée par la DSI groupe"
+      ],
+      "drawbacks": [
+        "Incompatible avec les données nominatives allemandes (Q2)",
+        "Projet lourd pour une DSI de 15 personnes",
+        "Ne règle pas les définitions divergentes"
+      ],
+      "conditions": [
+        "Aucune donnée ne doit rester dans une filiale",
+        "DSI groupe renforcée en compétences data"
+      ]
+    },
+    {
+      "id": "O2",
+      "name": "Architecture fédérée",
+      "description": "Les données restent dans chaque filiale ; accès logique gouverné depuis le groupe.",
+      "advantages": [
+        "Respecte nativement la contrainte allemande",
+        "Filiales responsabilisées sur leurs données",
+        "Peu de données déplacées"
+      ],
+      "drawbacks": [
+        "Requêtes inter-filiales complexes et lentes",
+        "Suppose trois équipes locales matures en data",
+        "Contrôle qualité groupe plus difficile"
+      ],
+      "conditions": [
+        "Filiales dotées de compétences data solides",
+        "Besoin surtout local, peu de consolidation"
+      ]
+    },
+    {
+      "id": "O3",
+      "name": "Hybride : agrégats au centre",
+      "description": "Agrégats harmonisés remontés au groupe ; nominatif RH/clients reste en Allemagne.",
+      "advantages": [
+        "Conforme RGPD et accord du comité d'entreprise",
+        "Périmètre central réduit, à la taille de la DSI",
+        "Reporting CODIR consolidé et traçable"
+      ],
+      "drawbacks": [
+        "Deux modes à gouverner : central et local",
+        "Croisement fin limité aux agrégats partagés",
+        "Contrats d'interface à négocier avec chaque filiale"
+      ],
+      "conditions": [
+        "Le CODIR n'a besoin que d'agrégats (A1)",
+        "Un batch mensuel puis quotidien suffit (Q4)"
+      ]
+    }
+  ],
+  "comparison": {
+    "constraints": [
+      {
+        "label": "Nominatif RH et clients reste en Allemagne",
+        "basis": [
+          "F7",
+          "Q2"
+        ],
+        "fits": [
+          {
+            "optionId": "O1",
+            "fit": "fail",
+            "note": "Copie toutes les données hors d'Allemagne"
+          },
+          {
+            "optionId": "O2",
+            "fit": "pass",
+            "note": "Aucune donnée ne quitte la filiale"
+          },
+          {
+            "optionId": "O3",
+            "fit": "pass",
+            "note": "Seuls des agrégats anonymisés remontent"
+          }
+        ]
+      },
+      {
+        "label": "Portable par une DSI de 15 personnes",
+        "basis": [
+          "F8",
+          "A4",
+          "Q5"
+        ],
+        "fits": [
+          {
+            "optionId": "O1",
+            "fit": "partial",
+            "note": "Seulement avec un fort renfort externe"
+          },
+          {
+            "optionId": "O2",
+            "fit": "partial",
+            "note": "Exige des compétences data dans chaque filiale"
+          },
+          {
+            "optionId": "O3",
+            "fit": "pass",
+            "note": "Périmètre central réduit aux agrégats"
+          }
+        ]
+      }
+    ],
+    "criteria": [
+      {
+        "label": "Fiabilité des chiffres CODIR",
+        "scores": [
+          {
+            "optionId": "O1",
+            "score": 4
+          },
+          {
+            "optionId": "O2",
+            "score": 2
+          },
+          {
+            "optionId": "O3",
+            "score": 4
+          }
+        ]
+      },
+      {
+        "label": "Rapidité de mise en valeur",
+        "scores": [
+          {
+            "optionId": "O1",
+            "score": 1
+          },
+          {
+            "optionId": "O2",
+            "score": 2
+          },
+          {
+            "optionId": "O3",
+            "score": 4
+          }
+        ]
+      },
+      {
+        "label": "Richesse du croisement commercial / industriel",
+        "scores": [
+          {
+            "optionId": "O1",
+            "score": 5
+          },
+          {
+            "optionId": "O2",
+            "score": 3
+          },
+          {
+            "optionId": "O3",
+            "score": 3
+          }
+        ]
+      },
+      {
+        "label": "Simplicité de gouvernance et d'exploitation",
+        "scores": [
+          {
+            "optionId": "O1",
+            "score": 4
+          },
+          {
+            "optionId": "O2",
+            "score": 2
+          },
+          {
+            "optionId": "O3",
+            "score": 3
+          }
+        ]
+      }
+    ]
+  },
+  "recommendation": {
+    "optionId": "O3",
+    "statement": "Retenir l'hybride : KPIs harmonisés au centre, données nominatives maintenues en Allemagne, précédés d'une gouvernance des définitions portée par le DAF.",
+    "rationale": "L'hybride répond au besoin CODIR tout en respectant la contrainte allemande et la capacité de la DSI. En contrepartie, le croisement fin est limité aux agrégats partagés. Si le CODIR exige du détail nominatif, le choix est à revoir.",
+    "dependsOn": [
+      "A1",
+      "A3",
+      "A4",
+      "Q1",
+      "Q3",
+      "Q4"
+    ],
+    "pivots": [
+      {
+        "basis": "A1",
+        "question": "Le CODIR a-t-il besoin du détail nominatif ?",
+        "assumed": "Des agrégats suffisent au CODIR",
+        "ifInstead": "Détail client nominatif exigé au groupe",
+        "thenOptionId": "O2",
+        "consequence": "Accès fédéré au détail allemand, requêté sur place, sans copie centrale."
+      },
+      {
+        "basis": "Q2",
+        "question": "Les agrégats allemands peuvent-ils sortir ?",
+        "assumed": "Agrégats anonymisés partageables",
+        "ifInstead": "Le DPO bloque aussi les agrégats",
+        "thenOptionId": "O2",
+        "consequence": "Calcul et consultation en Allemagne ; le groupe n'accède qu'en lecture gouvernée."
+      },
+      {
+        "basis": "Q3",
+        "question": "Le DAF peut-il trancher les définitions ?",
+        "assumed": "DAF sponsor, data owners par filiale",
+        "ifInstead": "Aucun arbitre groupe accepté",
+        "thenOptionId": null,
+        "consequence": "L'hybride tient, mais on lance d'abord un chantier gouvernance mandaté par la DG."
+      }
+    ]
+  },
+  "targetBlocks": [
+    {
+      "id": "B1",
+      "name": "Gouvernance des KPIs",
+      "role": "DAF sponsor, un data owner par filiale et par KPI, arbitrage des définitions."
+    },
+    {
+      "id": "B2",
+      "name": "Dictionnaire KPI commun",
+      "role": "Définitions uniques de la marge, du taux de service et de l'OTD, versionnées."
+    },
+    {
+      "id": "B3",
+      "name": "Référentiels partagés",
+      "role": "Tables de correspondance produits, clients et sites pour croiser commercial et industriel."
+    },
+    {
+      "id": "B4",
+      "name": "Pipelines batch par filiale",
+      "role": "Extraction ERP, calcul local, remontée d'agrégats anonymisés selon un contrat d'interface."
+    },
+    {
+      "id": "B5",
+      "name": "Socle agrégé groupe",
+      "role": "Stockage central des agrégats, contrôles qualité et traçabilité des retraitements."
+    },
+    {
+      "id": "B6",
+      "name": "Tableau de bord CODIR",
+      "role": "Vue consolidée unique, adoptée par le contrôle de gestion et le CODIR."
+    }
+  ],
+  "initiatives": [
+    {
+      "name": "OTD harmonisé France–Espagne",
+      "value": 4,
+      "feasibility": 4,
+      "risk": 2,
+      "timeToValue": 4,
+      "reuse": 5,
+      "verdict": "pilot",
+      "comment": "KPI contesté, sans données nominatives : construit gouvernance, pipeline et tableau de bord."
+    },
+    {
+      "name": "Marge consolidée trois filiales",
+      "value": 5,
+      "feasibility": 2,
+      "risk": 3,
+      "timeToValue": 2,
+      "reuse": 4,
+      "verdict": "next",
+      "comment": "Forte valeur, mais retraitements financiers complexes : réutiliser le socle du pilote."
+    },
+    {
+      "name": "Référentiels produits, clients, sites",
+      "value": 4,
+      "feasibility": 2,
+      "risk": 3,
+      "timeToValue": 2,
+      "reuse": 5,
+      "verdict": "next",
+      "comment": "Clé du croisement commercial / industriel ; démarrer par le périmètre du pilote."
+    },
+    {
+      "name": "Plateforme complète big bang",
+      "value": 3,
+      "feasibility": 1,
+      "risk": 5,
+      "timeToValue": 1,
+      "reuse": 2,
+      "verdict": "avoid",
+      "comment": "Trop lourd pour 15 personnes, bute sur la contrainte allemande."
+    },
+    {
+      "name": "Analyses RH et clients groupe",
+      "value": 2,
+      "feasibility": 2,
+      "risk": 5,
+      "timeToValue": 2,
+      "reuse": 2,
+      "verdict": "later",
+      "comment": "Données nominatives allemandes : agrégats anonymisés uniquement, après validation du DPO."
+    }
+  ],
+  "traps": [
+    {
+      "reflex": "E8",
+      "whyHere": "La « data platform groupe » suggère de tout centraliser, alors que des agrégats suffisent (Q2)."
+    },
+    {
+      "reflex": "E1",
+      "whyHere": "Construire la plateforme avant d'harmoniser les KPIs donnerait plus vite des chiffres toujours contestés."
+    },
+    {
+      "reflex": "E7",
+      "whyHere": "Le pilote OTD doit laisser gouvernance, dictionnaire et pipeline réutilisables, pas un Excel automatisé."
+    }
+  ]
+}

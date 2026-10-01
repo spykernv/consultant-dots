@@ -1,0 +1,9 @@
+{
+  "primaryDomain": "cloud_transformation",
+  "secondaryDomains": [
+    "si_transformation",
+    "enterprise_architecture"
+  ],
+  "confidence": 75,
+  "rationale": "Enjeu central : sortir d'un datacenter dont l'infogérance expire dans 18 mois, en réduisant les coûts et les délais de déploiement. La contrainte : ne jamais interrompre la production. « Tout migrer dans le cloud » reste un moyen, à décider application par application, en tenant compte du legacy et des versions du MES différentes selon les sites."
+}

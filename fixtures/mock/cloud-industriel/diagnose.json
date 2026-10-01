@@ -1,0 +1,122 @@
+{
+  "framework": [
+    {
+      "step": "Cadrage de l'échéance",
+      "backbone": "cadrage",
+      "focus": "Transformer « tout cloud » en objectifs chiffrés, avec les 18 mois comme contrainte.",
+      "keyQuestions": [
+        "Quel objectif prime : sortir à temps, baisser le run ou accélérer ?",
+        "Qui décide avec le DSI : directeurs de site, finance ?"
+      ]
+    },
+    {
+      "step": "Inventaire du portefeuille",
+      "backbone": "diagnostic",
+      "focus": "Qualifier les 120 applications : valeur, criticité, coût, obsolescence, propriétaire.",
+      "keyQuestions": [
+        "Quelles applications pilotent les lignes ?",
+        "Qui est propriétaire métier de chaque application ?"
+      ]
+    },
+    {
+      "step": "Dépendances et contraintes",
+      "backbone": "diagnostic",
+      "focus": "Cartographier les liens MES, automates et réseau usine, ainsi que la latence exigée.",
+      "keyQuestions": [
+        "Quelles applications ne peuvent pas quitter les sites ?",
+        "Quelles dépendances imposent de migrer des applications ensemble ?"
+      ]
+    },
+    {
+      "step": "Décision par application",
+      "backbone": "options",
+      "focus": "Choisir entre conserver, rehost, replatform, refactor, remplacer ou retirer, avec des critères explicites.",
+      "keyQuestions": [
+        "Que doit devenir chaque application, et pourquoi ?",
+        "Quelles applications retirer avant de migrer ?"
+      ]
+    },
+    {
+      "step": "Cible hybride et vagues",
+      "backbone": "cible",
+      "focus": "Cible cloud + sites + infogérance réduite, avec des vagues calées sur les 18 mois.",
+      "keyQuestions": [
+        "Quel périmètre reste chez l'infogérant après 18 mois ?"
+      ]
+    },
+    {
+      "step": "Pilote puis passage à l'échelle",
+      "backbone": "pilote",
+      "focus": "Une application représentative et non critique, qui pose des fondations cloud réutilisables.",
+      "keyQuestions": [
+        "Quelle baseline de coût et de délai de déploiement mesurer ?"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "dimension": "Criticité opérationnelle / disponibilité",
+      "finding": "Environ 15-20 % des applications pilotent les lignes : aucune interruption tolérée.",
+      "basis": [
+        "F7",
+        "Q2"
+      ]
+    },
+    {
+      "dimension": "Dépendances",
+      "finding": "Le MES dépend probablement des automates et du réseau usine : faible latence exigée.",
+      "basis": [
+        "A2",
+        "F7"
+      ]
+    },
+    {
+      "dimension": "Obsolescence / complexité technique",
+      "finding": "Le legacy des années 2000 migré tel quel en VM resterait aussi difficile à maintenir.",
+      "basis": [
+        "F2",
+        "A3"
+      ]
+    },
+    {
+      "dimension": "Coût de maintenance",
+      "finding": "Run coûteux, mais aucun business case chiffré : la baisse des coûts est à prouver.",
+      "basis": [
+        "F4",
+        "A5"
+      ]
+    },
+    {
+      "dimension": "Complexité de migration",
+      "finding": "Cinq versions de MES différentes : cinq migrations distinctes, pas une seule.",
+      "basis": [
+        "F1",
+        "F6"
+      ]
+    },
+    {
+      "dimension": "Valeur business / propriétaires",
+      "finding": "Cartographie partielle : valeur et propriétaire métier inconnus pour une grande partie des applications.",
+      "basis": [
+        "Q3",
+        "A1"
+      ]
+    },
+    {
+      "dimension": "Contraintes contractuelles",
+      "finding": "Échéance ferme à 18 mois, mais prolongation partielle probablement négociable.",
+      "basis": [
+        "F3",
+        "Q4",
+        "A4"
+      ]
+    }
+  ],
+  "rootCauses": [
+    "Pas de gouvernance du portefeuille : ni propriétaires métier, ni cartographie à jour.",
+    "Run externalisé à l'infogérant : la DSI a perdu la maîtrise de son existant.",
+    "Aucune gouvernance MES entre les sites : chaque site a fait évoluer sa version.",
+    "Déploiements manuels et legacy spécifique : la lenteur vient des processus, pas seulement de l'infrastructure."
+  ],
+  "keyInsight": "Le problème n'est pas l'hébergement mais un portefeuille mal connu : il faut décider application par application, et 18 mois ne suffiront pas à tout migrer sans risquer la production."
+}

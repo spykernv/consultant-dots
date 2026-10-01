@@ -1,0 +1,115 @@
+{
+  "duration": "≈ 3 min 30",
+  "opening": "Je vais reformuler l'enjeu, poser ma structure, partager mon diagnostic, puis recommander une trajectoire en 18 mois avec ses indicateurs.",
+  "sections": [
+    {
+      "kind": "reformulation",
+      "title": "Le vrai enjeu",
+      "bullets": [
+        {
+          "point": "L'objectif n'est pas le cloud : c'est sortir du datacenter dans 18 mois.",
+          "detail": "Le cloud est un moyen. Ce qui compte, c'est de baisser les coûts, d'accélérer les déploiements et de tenir l'échéance de l'infogérance."
+        },
+        {
+          "point": "Avec une contrainte absolue : ne jamais arrêter une ligne de production.",
+          "detail": "Certaines applications pilotent les lignes et ne tolèrent aucune interruption. C'est ce qui borne toute la trajectoire."
+        },
+        {
+          "point": "Je fais l'hypothèse que la priorité est l'échéance, puis le coût de run.",
+          "detail": "C'est à valider avec le DSI en cadrage, car cela change l'ordre des vagues."
+        }
+      ]
+    },
+    {
+      "kind": "structure",
+      "title": "Ma démarche",
+      "bullets": [
+        {
+          "point": "D'abord connaître le portefeuille : les 120 applications, leurs dépendances et leurs propriétaires.",
+          "detail": "On ne décide pas de migrer ce qu'on ne connaît pas. Je fais l'hypothèse que la cartographie actuelle est partielle."
+        },
+        {
+          "point": "Ensuite, décider application par application : garder, migrer, remplacer ou retirer.",
+          "detail": "Les critères sont explicites : criticité production, valeur métier, coût, obsolescence et dépendances."
+        },
+        {
+          "point": "Enfin, une cible hybride, un pilote, puis des vagues de migration.",
+          "detail": "Chaque vague réutilise le socle posé par le pilote."
+        }
+      ]
+    },
+    {
+      "kind": "analysis",
+      "title": "Ce que je vois",
+      "bullets": [
+        {
+          "point": "Le problème n'est pas l'hébergement, c'est un portefeuille mal connu.",
+          "detail": "Il n'y a ni propriétaires métier, ni cartographie à jour, et le run est externalisé : la DSI a perdu la maîtrise de son existant."
+        },
+        {
+          "point": "Le pilotage des lignes doit sans doute rester sur site.",
+          "detail": "Je fais l'hypothèse que le MES dépend des automates et du réseau usine, avec une faible latence. Ce sont environ 15 à 20 % des applications, à confirmer."
+        },
+        {
+          "point": "La lenteur des déploiements vient aussi des processus manuels.",
+          "detail": "Déplacer le legacy sur une VM dans le cloud ne le rend pas plus maintenable. Il faut aussi automatiser la chaîne de déploiement."
+        }
+      ]
+    },
+    {
+      "kind": "recommendation",
+      "title": "Cible hybride, en vagues",
+      "bullets": [
+        {
+          "point": "Je recommande une cible hybride plutôt que le « tout cloud » en 18 mois.",
+          "detail": "On retire avant de migrer, on migre le non-critique et on garde le pilotage des lignes sur site. Le compromis : garder un petit périmètre chez l'infogérant, ce qui suppose que le contrat soit renégociable."
+        },
+        {
+          "point": "Mois 0 à 2 : cadrage et décision pour chacune des 120 applications.",
+          "detail": "Chaque application a un propriétaire métier nommé. Un comité DSI, directeurs de site et finance arbitre."
+        },
+        {
+          "point": "Mois 2 à 6 : un pilote sur une application de gestion non critique.",
+          "detail": "Ce pilote pose la landing zone et la chaîne CI/CD que toutes les vagues réutiliseront. L'équipe apprend sans risque pour la production."
+        },
+        {
+          "point": "Mois 6 à 18 : les vagues, puis la sortie du datacenter.",
+          "detail": "On avance du moins risqué au plus critique. Les directeurs de site valident chaque bascule qui touche la production."
+        }
+      ]
+    },
+    {
+      "kind": "next_steps",
+      "title": "Mesure et suite",
+      "bullets": [
+        {
+          "point": "Mesurer d'abord la baseline : coût de run et délai de déploiement.",
+          "detail": "Il n'existe pas de business case chiffré. Sans baseline, on ne pourra pas prouver la baisse."
+        },
+        {
+          "point": "KPIs : coût de run, délai de déploiement, part du portefeuille traitée, zéro arrêt de ligne.",
+          "detail": "Pour le pilote, l'objectif est de passer de plusieurs semaines à moins de 3 jours de déploiement, pour un coût inférieur ou égal à l'existant."
+        },
+        {
+          "point": "Dès cette semaine : vérifier avec les achats si le contrat d'infogérance est renégociable.",
+          "detail": "C'est ce qui conditionne la cible hybride et le rythme des vagues."
+        }
+      ]
+    }
+  ],
+  "closing": "Le KPI qui compte : zéro arrêt de ligne pendant que le coût de run baisse. La première étape consiste à lancer l'inventaire des 120 applications et à mesurer la baseline de coût et de délai de déploiement.",
+  "differentiators": [
+    {
+      "point": "Challenger le « tout cloud » sans s'opposer au DSI.",
+      "howToSayIt": "Je partage l'ambition du DSI, mais je propose de la tenir application par application, pour ne jamais mettre une ligne en risque."
+    },
+    {
+      "point": "Traiter l'échéance comme un levier de négociation contractuelle.",
+      "howToSayIt": "Les 18 mois ne sont pas qu'une contrainte : renégocier un périmètre réduit avec l'infogérant nous donne du temps pour les applications critiques."
+    },
+    {
+      "point": "Penser gouvernance et compétences, pas seulement technologie.",
+      "howToSayIt": "Un propriétaire par application, un go/no-go des directeurs de site, et un partenaire qui transfère progressivement le savoir-faire aux équipes internes."
+    }
+  ]
+}

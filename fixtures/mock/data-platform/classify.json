@@ -1,0 +1,9 @@
+{
+  "primaryDomain": "data_platform",
+  "secondaryDomains": [
+    "data_management",
+    "enterprise_architecture"
+  ],
+  "confidence": 85,
+  "rationale": "Le problème métier est un pilotage groupe peu fiable. Les données de trois filiales sont fragmentées, avec des définitions de KPIs différentes et une consolidation manuelle de 10 jours. La contrainte de résidence des données allemandes impose d'étudier une cible fédérée ou hybride. La « data platform » n'est qu'un moyen."
+}

@@ -1,0 +1,197 @@
+{
+  "diagram": {
+    "direction": "LR",
+    "groups": [
+      {
+        "id": "sites",
+        "label": "5 sites de production",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "usine",
+        "label": "Périmètre usine temps réel",
+        "kind": "local_boundary",
+        "parentId": "sites"
+      },
+      {
+        "id": "dc",
+        "label": "Datacenter on-premise infogéré",
+        "kind": "zone",
+        "parentId": null
+      }
+    ],
+    "nodes": [
+      {
+        "id": "dsi",
+        "label": "DSI sponsor « tout cloud »",
+        "kind": "actor",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "dirsite",
+        "label": "Directeurs de site",
+        "kind": "actor",
+        "groupId": "sites",
+        "status": "existing"
+      },
+      {
+        "id": "infog",
+        "label": "Infogérant actuel",
+        "kind": "actor",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "lignes",
+        "label": "Lignes et automates",
+        "kind": "system",
+        "groupId": "usine",
+        "status": "assumption"
+      },
+      {
+        "id": "mes",
+        "label": "MES versions hétérogènes",
+        "kind": "system",
+        "groupId": "sites",
+        "status": "existing"
+      },
+      {
+        "id": "apps",
+        "label": "~120 applications",
+        "kind": "system",
+        "groupId": "dc",
+        "status": "existing"
+      },
+      {
+        "id": "legacy",
+        "label": "Legacy spécifique années 2000",
+        "kind": "system",
+        "groupId": "dc",
+        "status": "existing"
+      },
+      {
+        "id": "carto",
+        "label": "Cartographie partielle et ancienne",
+        "kind": "data",
+        "groupId": null,
+        "status": "assumption"
+      },
+      {
+        "id": "contrat",
+        "label": "Fin contrat dans 18 mois",
+        "kind": "constraint",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "zero",
+        "label": "Zéro interruption production",
+        "kind": "constraint",
+        "groupId": "usine",
+        "status": "existing"
+      },
+      {
+        "id": "couts",
+        "label": "Coûts d'infrastructure élevés",
+        "kind": "pain_point",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "deploi",
+        "label": "Déploiements de plusieurs semaines",
+        "kind": "pain_point",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "maint",
+        "label": "Maintenance complexe",
+        "kind": "pain_point",
+        "groupId": null,
+        "status": "existing"
+      }
+    ],
+    "edges": [
+      {
+        "from": "dirsite",
+        "to": "mes",
+        "label": "utilisent",
+        "style": "solid"
+      },
+      {
+        "from": "mes",
+        "to": "lignes",
+        "label": "pilote",
+        "style": "thick"
+      },
+      {
+        "from": "lignes",
+        "to": "zero",
+        "label": null,
+        "style": "solid"
+      },
+      {
+        "from": "mes",
+        "to": "apps",
+        "label": "dépendances floues",
+        "style": "dashed"
+      },
+      {
+        "from": "infog",
+        "to": "dc",
+        "label": "exploite",
+        "style": "solid"
+      },
+      {
+        "from": "infog",
+        "to": "contrat",
+        "label": null,
+        "style": "solid"
+      },
+      {
+        "from": "dsi",
+        "to": "apps",
+        "label": "veut migrer",
+        "style": "dashed"
+      },
+      {
+        "from": "apps",
+        "to": "carto",
+        "label": "mal documentées",
+        "style": "dashed"
+      },
+      {
+        "from": "dc",
+        "to": "couts",
+        "label": null,
+        "style": "thick"
+      },
+      {
+        "from": "legacy",
+        "to": "maint",
+        "label": null,
+        "style": "solid"
+      },
+      {
+        "from": "legacy",
+        "to": "deploi",
+        "label": "manuels",
+        "style": "dashed"
+      },
+      {
+        "from": "mes",
+        "to": "maint",
+        "label": "5 versions",
+        "style": "solid"
+      }
+    ]
+  },
+  "bottlenecks": [
+    "Dépendances MES / applications mal connues : impossible de migrer sans risque (A1, Q3)",
+    "Legacy des années 2000 et déploiements manuels : coûts et lenteur (F4, F5, A3)",
+    "Délai de 18 mois contre zéro interruption : tout migrer d'un coup n'est pas tenable (F3, F7)"
+  ]
+}

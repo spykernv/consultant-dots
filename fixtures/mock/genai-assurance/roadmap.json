@@ -1,0 +1,192 @@
+{
+  "phases": [
+    {
+      "name": "Phase 1 — Cadrage & diagnostic",
+      "timing": "0–1 mois",
+      "objective": "Établir la référence et choisir le domaine pilote avec un sponsor clair.",
+      "actions": [
+        "Mesurer temps de traitement et temps de recherche par motif (téléphonie, CRM)",
+        "Identifier les motifs d'appel les plus coûteux en recherche (Q2)",
+        "Faire valider par la conformité et le DPO le périmètre des réponses (Q3)",
+        "Nommer le sponsor relation client et les référents métier (Q1, Q5)"
+      ],
+      "deliverables": [
+        "Référence avant/après par motif d'appel",
+        "Note de cadrage : domaine pilote, périmètre, garde-fous"
+      ],
+      "decisions": [
+        "Domaine pilote retenu (hypothèse : auto)",
+        "Chatbot autonome écarté pour le pilote, décision tracée au comex"
+      ],
+      "dependencies": [
+        "Accès aux données de téléphonie et du CRM",
+        "Disponibilité de la conformité et du DPO"
+      ],
+      "kpis": [
+        "Référence mesurée sur 100 % des motifs du domaine",
+        "Sponsor et référents nommés"
+      ]
+    },
+    {
+      "name": "Phase 2 — Base de référence & design du pilote",
+      "timing": "1–2,5 mois",
+      "objective": "Assainir le domaine auto et concevoir un assistant sourcé et encadré.",
+      "actions": [
+        "Assainir les contenus auto : une version qui fait foi par sujet (B1)",
+        "Mettre en place le cycle de mise à jour et de validation (B2)",
+        "Choisir l'éditeur sur critères : LLM hébergé UE, sources citées, journalisation (B3, B4)",
+        "Construire un jeu d'évaluation de questions réelles avec réponses validées (B5)"
+      ],
+      "deliverables": [
+        "Base auto assainie et versionnée",
+        "Cadre d'usage LLM validé conformité / DPO",
+        "Jeu d'évaluation d'environ 200 questions"
+      ],
+      "decisions": [
+        "Choix de l'éditeur et du modèle",
+        "Seuil d'exactitude minimal avant ouverture aux conseillers"
+      ],
+      "dependencies": [
+        "Disponibilité des référents métier",
+        "Arbitrage juridique sur les contenus contradictoires"
+      ],
+      "kpis": [
+        "Part des pages auto revues et validées",
+        "Exactitude sur le jeu d'évaluation avant go-live"
+      ]
+    },
+    {
+      "name": "Phase 3 — Pilote",
+      "timing": "2,5–6 mois",
+      "objective": "Prouver le gain en temps et en fiabilité sur une équipe, avant/après.",
+      "actions": [
+        "Déployer l'assistant auprès d'une équipe, avec un groupe témoin",
+        "Former des conseillers ambassadeurs et ouvrir la remontée d'erreurs (B6)",
+        "Suivre chaque semaine exactitude, usage et temps de traitement",
+        "Présenter au comex les résultats mesurés et la décision go / no-go"
+      ],
+      "deliverables": [
+        "Bilan chiffré avant/après versus groupe témoin",
+        "Registre des erreurs et corrections de contenus"
+      ],
+      "decisions": [
+        "Go / no-go du passage à l'échelle",
+        "Ordre des domaines suivants"
+      ],
+      "dependencies": [
+        "Intégration minimale au poste conseiller (A3)",
+        "Adhésion des managers d'équipe"
+      ],
+      "kpis": [
+        "Temps de recherche par appel",
+        "Taux d'usage hebdomadaire des conseillers"
+      ]
+    },
+    {
+      "name": "Phase 4 — Passage à l'échelle",
+      "timing": "6–12 mois",
+      "objective": "Étendre domaine par domaine et ouvrir les cas d'usage suivants.",
+      "actions": [
+        "Assainir et ouvrir les domaines habitation, santé, etc. avec leurs référents",
+        "Déployer aux 800 conseillers, intégré au parcours d'intégration des nouveaux",
+        "Instruire le résumé d'appel CRM une fois le cadre RGPD posé"
+      ],
+      "deliverables": [
+        "Feuille de route par domaine et par cas d'usage",
+        "Gouvernance des contenus opérationnelle sur tous les domaines"
+      ],
+      "decisions": [
+        "Mise en place d'une gouvernance IA pérenne (propriétaire, budget, éditeurs)",
+        "Conditions d'une suggestion de réponse validée (O2)"
+      ],
+      "dependencies": [
+        "Résultats du pilote",
+        "Capacité des métiers à maintenir les contenus"
+      ],
+      "kpis": [
+        "Part des conseillers utilisateurs actifs",
+        "Temps de traitement moyen au global"
+      ]
+    }
+  ],
+  "pilot": {
+    "initiative": "Assistant interne domaine auto",
+    "scope": "1 équipe de conseillers → motifs sinistres et garanties auto → 1 base auto assainie → 1 assistant sourcé → 1 mesure avant/après avec groupe témoin",
+    "why": "Il vise directement les 3 minutes de recherche (F3). Le conseiller reste décisionnaire, donc le risque contractuel est maîtrisé. Le gain se mesure en quelques semaines, et la base et sa gouvernance servent aux domaines suivants.",
+    "successCriteria": [
+      "Temps de recherche réduit d'au moins 30 % par rapport au groupe témoin",
+      "Exactitude sourcée ≥ 90 % sur le jeu d'évaluation",
+      "Au moins 70 % des conseillers du pilote l'utilisent chaque semaine"
+    ],
+    "reusableFoundations": [
+      "Base de connaissance auto de référence et son cycle de mise à jour",
+      "Cadre d'usage LLM validé par la conformité et le DPO",
+      "Jeu d'évaluation et référentiel KPI réutilisables pour chaque domaine"
+    ]
+  },
+  "kpis": [
+    {
+      "name": "Durée moyenne de traitement d'un appel",
+      "type": "business",
+      "baseline": "9 minutes (F2)",
+      "target": "-1 minute sur le périmètre pilote"
+    },
+    {
+      "name": "Temps de recherche d'information par appel",
+      "type": "business",
+      "baseline": "≈ 3 minutes, soit un tiers de l'appel (F3)",
+      "target": "-30 % sur le périmètre pilote"
+    },
+    {
+      "name": "Durée de montée en compétence des nouveaux conseillers",
+      "type": "business",
+      "baseline": "à mesurer au cadrage",
+      "target": "-20 % au passage à l'échelle"
+    },
+    {
+      "name": "Taux d'usage hebdomadaire de l'assistant",
+      "type": "adoption",
+      "baseline": "0 (nouvel outil)",
+      "target": "≥ 70 % des conseillers du pilote"
+    },
+    {
+      "name": "Exactitude des réponses sourcées",
+      "type": "technical",
+      "baseline": "à mesurer au cadrage (jeu d'évaluation)",
+      "target": "≥ 90 %, avec source citée dans 100 % des cas"
+    },
+    {
+      "name": "Erreurs à portée contractuelle signalées",
+      "type": "risk",
+      "baseline": "à mesurer au cadrage",
+      "target": "0 erreur non détectée avant réponse au client"
+    }
+  ],
+  "risks": [
+    {
+      "risk": "Les contenus auto restent contradictoires faute de référents disponibles.",
+      "impact": "L'assistant cite des sources fausses : perte de confiance et risque contractuel.",
+      "mitigation": "Référents nommés par le sponsor, temps dédié, validation juridique des arbitrages."
+    },
+    {
+      "risk": "Le comex, pressé par les 6 mois, relance le chatbot autonome.",
+      "impact": "Engagements contractuels erronés auprès des clients, sur une base encore peu fiable.",
+      "mitigation": "Décision tracée au comex ; chatbot conditionné aux résultats mesurés du pilote."
+    },
+    {
+      "risk": "Des données clients entrent dans les requêtes au LLM.",
+      "impact": "Non-conformité RGPD, blocage du projet par le DPO.",
+      "mitigation": "LLM hébergé en UE, filtrage des données personnelles, journalisation, validation DPO."
+    },
+    {
+      "risk": "Les conseillers n'utilisent pas l'outil ou le suivent sans vérifier.",
+      "impact": "Pas de gain de temps, ou erreurs transmises au client.",
+      "mitigation": "Ambassadeurs, source toujours affichée, bouton de signalement d'erreur, suivi par les managers."
+    },
+    {
+      "risk": "Dépendance à un éditeur choisi avant le cas d'usage.",
+      "impact": "Solution enfermante, coûts qui dérivent au passage à l'échelle.",
+      "mitigation": "Choix sur critères de la phase 2, base de connaissance possédée par l'assureur."
+    }
+  ]
+}

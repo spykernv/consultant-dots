@@ -1,0 +1,264 @@
+{
+  "principles": [
+    "Le conseiller décide toujours : l'assistant propose, il n'engage jamais l'assureur.",
+    "Aucune réponse sans source : l'assistant ne cite que la base de référence.",
+    "Pas de contenu fiable sans propriétaire : chaque domaine a un référent métier.",
+    "Aucune donnée client dans les requêtes du pilote : RGPD respecté dès la conception.",
+    "Pas de gain sans mesure : chaque résultat se compare à une référence avant/après."
+  ],
+  "diagram": {
+    "direction": "LR",
+    "groups": [
+      {
+        "id": "crc",
+        "label": "Centre relation client",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "socle",
+        "label": "Socle GenAI interne",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "metier",
+        "label": "Directions métier et conformité",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "rgpd",
+        "label": "Données clients RGPD",
+        "kind": "local_boundary",
+        "parentId": null
+      }
+    ],
+    "nodes": [
+      {
+        "id": "client",
+        "label": "Clients assurés",
+        "kind": "actor",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "cons",
+        "label": "Conseillers décisionnaires",
+        "kind": "actor",
+        "groupId": "crc",
+        "status": "changed"
+      },
+      {
+        "id": "appel",
+        "label": "Appel assisté",
+        "kind": "process",
+        "groupId": "crc",
+        "status": "changed"
+      },
+      {
+        "id": "recherche",
+        "label": "Recherche manuelle d'information",
+        "kind": "process",
+        "groupId": "crc",
+        "status": "retired"
+      },
+      {
+        "id": "adoption",
+        "label": "Ambassadeurs et formation",
+        "kind": "process",
+        "groupId": "crc",
+        "status": "new"
+      },
+      {
+        "id": "assistant",
+        "label": "Assistant sourcé (RAG)",
+        "kind": "system",
+        "groupId": "socle",
+        "status": "new"
+      },
+      {
+        "id": "llm",
+        "label": "LLM hébergé en UE",
+        "kind": "system",
+        "groupId": "socle",
+        "status": "assumption"
+      },
+      {
+        "id": "garde",
+        "label": "Garde-fous et journalisation",
+        "kind": "control",
+        "groupId": "socle",
+        "status": "new"
+      },
+      {
+        "id": "kb",
+        "label": "Base de référence auto",
+        "kind": "data",
+        "groupId": "socle",
+        "status": "changed"
+      },
+      {
+        "id": "referents",
+        "label": "Référents métier par domaine",
+        "kind": "actor",
+        "groupId": "metier",
+        "status": "assumption"
+      },
+      {
+        "id": "conformite",
+        "label": "Validation conformité et DPO",
+        "kind": "control",
+        "groupId": "metier",
+        "status": "assumption"
+      },
+      {
+        "id": "crm",
+        "label": "CRM et téléphonie",
+        "kind": "system",
+        "groupId": "rgpd",
+        "status": "assumption"
+      },
+      {
+        "id": "kpi",
+        "label": "Tableau de bord KPI",
+        "kind": "output",
+        "groupId": null,
+        "status": "new"
+      },
+      {
+        "id": "sponsor",
+        "label": "Sponsor direction relation client",
+        "kind": "actor",
+        "groupId": null,
+        "status": "assumption"
+      }
+    ],
+    "edges": [
+      {
+        "from": "client",
+        "to": "appel",
+        "label": "appelle",
+        "style": "thick"
+      },
+      {
+        "from": "cons",
+        "to": "appel",
+        "label": "traite, décide",
+        "style": "solid"
+      },
+      {
+        "from": "appel",
+        "to": "recherche",
+        "label": "supprimée",
+        "style": "dashed"
+      },
+      {
+        "from": "appel",
+        "to": "assistant",
+        "label": "question",
+        "style": "thick"
+      },
+      {
+        "from": "assistant",
+        "to": "kb",
+        "label": "cherche uniquement",
+        "style": "thick"
+      },
+      {
+        "from": "assistant",
+        "to": "llm",
+        "label": "génère",
+        "style": "solid"
+      },
+      {
+        "from": "assistant",
+        "to": "cons",
+        "label": "réponse sourcée",
+        "style": "thick"
+      },
+      {
+        "from": "garde",
+        "to": "assistant",
+        "label": "encadre",
+        "style": "solid"
+      },
+      {
+        "from": "garde",
+        "to": "crm",
+        "label": "exclu au pilote",
+        "style": "dashed"
+      },
+      {
+        "from": "cons",
+        "to": "crm",
+        "label": "consulte",
+        "style": "solid"
+      },
+      {
+        "from": "referents",
+        "to": "kb",
+        "label": "valident, mettent à jour",
+        "style": "solid"
+      },
+      {
+        "from": "conformite",
+        "to": "kb",
+        "label": "valide garanties",
+        "style": "solid"
+      },
+      {
+        "from": "adoption",
+        "to": "cons",
+        "label": "forme, remonte erreurs",
+        "style": "solid"
+      },
+      {
+        "from": "assistant",
+        "to": "kpi",
+        "label": "mesures",
+        "style": "solid"
+      },
+      {
+        "from": "kpi",
+        "to": "sponsor",
+        "label": "avant / après",
+        "style": "solid"
+      },
+      {
+        "from": "sponsor",
+        "to": "referents",
+        "label": "mandate",
+        "style": "dashed"
+      }
+    ]
+  },
+  "keyChanges": [
+    {
+      "from": "15 000 pages sans propriétaire",
+      "to": "Base de référence versionnée"
+    },
+    {
+      "from": "Recherche manuelle de ~3 minutes",
+      "to": "Réponse sourcée en quelques secondes"
+    },
+    {
+      "from": "Chatbot autonome proposé aux clients",
+      "to": "Assistant interne, conseiller décisionnaire"
+    },
+    {
+      "from": "GenAI poussée par les éditeurs",
+      "to": "Cas d'usage porté par un sponsor"
+    },
+    {
+      "from": "Aucune mesure par motif",
+      "to": "KPI avant/après sur le pilote"
+    }
+  ],
+  "operatingModel": [
+    "Un sponsor unique (direction relation client) porte la valeur et rend compte au comex.",
+    "Des référents métier par domaine deviennent propriétaires des contenus et de leur mise à jour.",
+    "Un comité conformité/DPO valide les contenus sensibles et les règles d'usage de la GenAI.",
+    "Des conseillers ambassadeurs signalent les erreurs et intègrent l'assistant au parcours des nouveaux."
+  ]
+}

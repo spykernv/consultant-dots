@@ -1,0 +1,216 @@
+{
+  "diagram": {
+    "direction": "LR",
+    "groups": [
+      {
+        "id": "fr",
+        "label": "Filiale France",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "de",
+        "label": "Filiale Allemagne",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "de_rgpd",
+        "label": "Données nominatives Allemagne",
+        "kind": "local_boundary",
+        "parentId": "de"
+      },
+      {
+        "id": "es",
+        "label": "Filiale Espagne",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "grp",
+        "label": "Siège groupe",
+        "kind": "zone",
+        "parentId": null
+      }
+    ],
+    "nodes": [
+      {
+        "id": "erp_fr",
+        "label": "ERP et reporting France",
+        "kind": "system",
+        "groupId": "fr",
+        "status": "existing"
+      },
+      {
+        "id": "erp_de",
+        "label": "ERP et reporting Allemagne",
+        "kind": "system",
+        "groupId": "de",
+        "status": "existing"
+      },
+      {
+        "id": "rh_de",
+        "label": "Données RH/clients nominatives",
+        "kind": "data",
+        "groupId": "de_rgpd",
+        "status": "existing"
+      },
+      {
+        "id": "erp_es",
+        "label": "ERP et reporting Espagne",
+        "kind": "system",
+        "groupId": "es",
+        "status": "existing"
+      },
+      {
+        "id": "kpi_local",
+        "label": "Définitions KPI divergentes",
+        "kind": "pain_point",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "no_ref",
+        "label": "Aucun référentiel commun",
+        "kind": "pain_point",
+        "groupId": null,
+        "status": "assumption"
+      },
+      {
+        "id": "cdg",
+        "label": "Contrôle de gestion groupe",
+        "kind": "actor",
+        "groupId": "grp",
+        "status": "existing"
+      },
+      {
+        "id": "excel",
+        "label": "Consolidation manuelle Excel",
+        "kind": "process",
+        "groupId": "grp",
+        "status": "existing"
+      },
+      {
+        "id": "delay",
+        "label": "10 jours par mois",
+        "kind": "pain_point",
+        "groupId": "grp",
+        "status": "existing"
+      },
+      {
+        "id": "dsi",
+        "label": "DSI groupe (15 pers.)",
+        "kind": "constraint",
+        "groupId": "grp",
+        "status": "existing"
+      },
+      {
+        "id": "no_owner",
+        "label": "Pas de propriétaire KPI",
+        "kind": "pain_point",
+        "groupId": "grp",
+        "status": "assumption"
+      },
+      {
+        "id": "reporting",
+        "label": "Reporting mensuel groupe",
+        "kind": "output",
+        "groupId": "grp",
+        "status": "existing"
+      },
+      {
+        "id": "codir",
+        "label": "DG et comité de direction",
+        "kind": "actor",
+        "groupId": "grp",
+        "status": "existing"
+      },
+      {
+        "id": "contest",
+        "label": "Chiffres contestés en CODIR",
+        "kind": "pain_point",
+        "groupId": "grp",
+        "status": "existing"
+      }
+    ],
+    "edges": [
+      {
+        "from": "erp_fr",
+        "to": "excel",
+        "label": "extractions Excel",
+        "style": "dashed"
+      },
+      {
+        "from": "erp_de",
+        "to": "excel",
+        "label": "extractions Excel",
+        "style": "dashed"
+      },
+      {
+        "from": "erp_es",
+        "to": "excel",
+        "label": "extractions Excel",
+        "style": "dashed"
+      },
+      {
+        "from": "rh_de",
+        "to": "erp_de",
+        "label": "reste en Allemagne",
+        "style": "solid"
+      },
+      {
+        "from": "kpi_local",
+        "to": "excel",
+        "label": "retraitements manuels",
+        "style": "dashed"
+      },
+      {
+        "from": "no_ref",
+        "to": "excel",
+        "label": "croisement difficile",
+        "style": "dashed"
+      },
+      {
+        "from": "cdg",
+        "to": "excel",
+        "label": "consolide",
+        "style": "solid"
+      },
+      {
+        "from": "excel",
+        "to": "delay",
+        "label": null,
+        "style": "solid"
+      },
+      {
+        "from": "excel",
+        "to": "reporting",
+        "label": null,
+        "style": "thick"
+      },
+      {
+        "from": "reporting",
+        "to": "codir",
+        "label": "présenté",
+        "style": "thick"
+      },
+      {
+        "from": "codir",
+        "to": "contest",
+        "label": null,
+        "style": "solid"
+      },
+      {
+        "from": "no_owner",
+        "to": "contest",
+        "label": "personne n'arbitre",
+        "style": "dashed"
+      }
+    ]
+  },
+  "bottlenecks": [
+    "Consolidation Excel manuelle : 10 jours chaque mois, portée par le contrôle de gestion (F4, F5).",
+    "Marge, taux de service et OTD définis différemment, sans arbitre groupe (F3, A3).",
+    "Aucun référentiel commun et données nominatives bloquées en Allemagne : croisement impossible (A2, Q2)."
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "framework": [
+    {
+      "step": "Douleur métier et référence",
+      "backbone": "cadrage",
+      "focus": "Chiffrer les 3 min de recherche par appel et fixer la mesure de départ.",
+      "keyQuestions": [
+        "Quel résultat le sponsor attend-il à 6 mois ?",
+        "Quelle référence avant/après pour le temps de traitement et la recherche ?"
+      ]
+    },
+    {
+      "step": "Tâches et sources de connaissance",
+      "backbone": "diagnostic",
+      "focus": "Identifier où se perd le temps : quels motifs d'appel, quels documents.",
+      "keyQuestions": [
+        "Quels motifs d'appel concentrent le temps de recherche ?",
+        "Quels documents font foi, et qui les valide ?"
+      ]
+    },
+    {
+      "step": "Opportunités IA et priorisation",
+      "backbone": "options",
+      "focus": "Comparer les cas d'usage sur trois critères : valeur, faisabilité, risque. Le chatbot autonome est inclus.",
+      "keyQuestions": [
+        "Quel cas d'usage réduit le plus le temps de recherche ?",
+        "Quelles réponses engagent contractuellement l'assureur ?"
+      ]
+    },
+    {
+      "step": "Solution et garde-fous",
+      "backbone": "cible",
+      "focus": "Sources, contrôle humain, RGPD et traçabilité, une fois le cas d'usage choisi.",
+      "keyQuestions": [
+        "Qui reste maître de la réponse finale au client ?",
+        "Quelles données peuvent entrer dans l'outil ?"
+      ]
+    },
+    {
+      "step": "Pilote sur un domaine",
+      "backbone": "pilote",
+      "focus": "Une équipe, un domaine assaini (ex. auto), un jeu de questions pour évaluer.",
+      "keyQuestions": [
+        "Le pilote laisse-t-il une base et une gouvernance réutilisables ?",
+        "Comment les conseillers intègrent-ils l'outil à leurs appels ?"
+      ]
+    },
+    {
+      "step": "Évaluation et passage à l'échelle",
+      "backbone": "scale",
+      "focus": "Suivre les KPI métier et les KPI IA avant d'étendre à d'autres domaines.",
+      "keyQuestions": [
+        "Le temps de traitement baisse-t-il sans hausse des erreurs ?",
+        "Les contenus sont-ils tenus à jour dans la durée ?"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "dimension": "Douleur métier",
+      "finding": "Environ 3 min sur 9 sont perdues en recherche, pour 800 conseillers.",
+      "basis": [
+        "F1",
+        "F2",
+        "F3"
+      ]
+    },
+    {
+      "dimension": "Tâches",
+      "finding": "La recherche se concentrerait sur quelques motifs (sinistres, garanties). Hypothèse à confirmer.",
+      "basis": [
+        "Q2",
+        "A2"
+      ]
+    },
+    {
+      "dimension": "Sources de connaissance",
+      "finding": "Il y a 15 000 pages obsolètes ou contradictoires. Une IA branchée dessus répéterait ces erreurs.",
+      "basis": [
+        "F4",
+        "F5",
+        "A1",
+        "Q1"
+      ]
+    },
+    {
+      "dimension": "Opportunités IA",
+      "finding": "Un assistant interne vise directement le temps de recherche et la formation des nouveaux.",
+      "basis": [
+        "F3",
+        "F6",
+        "A4"
+      ]
+    },
+    {
+      "dimension": "Valeur × faisabilité × risque",
+      "finding": "Le chatbot autonome présente le risque maximal : erreurs contractuelles, hallucinations, RGPD.",
+      "basis": [
+        "F8",
+        "Q3"
+      ]
+    },
+    {
+      "dimension": "Faisabilité",
+      "finding": "Aucun cadre LLM, un CRM à intégrer : premier pilote sans données clients.",
+      "basis": [
+        "Q4",
+        "A3"
+      ]
+    },
+    {
+      "dimension": "Évaluation",
+      "finding": "Pas de mesure par motif d'appel aujourd'hui : il faut une référence avant tout pilote.",
+      "basis": [
+        "A2",
+        "Q5"
+      ]
+    }
+  ],
+  "rootCauses": [
+    "Pas de gouvernance des contenus : aucun propriétaire, aucun cycle de mise à jour.",
+    "Documentation empilée, non organisée par motif d'appel ni par usage conseiller.",
+    "Turnover de 25 % : le savoir reste chez les anciens, pas dans les outils.",
+    "Pilotage faible : pas de mesure par motif, ambition GenAI portée par les propositions des éditeurs."
+  ],
+  "keyInsight": "Le vrai problème n'est pas l'absence d'IA mais une base documentaire sans propriétaire : sans contenus fiables, une GenAI multiplierait les réponses fausses."
+}

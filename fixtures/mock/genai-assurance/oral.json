@@ -1,0 +1,115 @@
+{
+  "duration": "≈ 3 min 30",
+  "opening": "Je structurerais ma réponse en cinq temps : l'enjeu réel, ma démarche, le diagnostic, ma recommandation avec la feuille de route, puis la mesure et la prochaine étape.",
+  "sections": [
+    {
+      "kind": "reformulation",
+      "title": "L'enjeu réel",
+      "bullets": [
+        {
+          "point": "Les conseillers perdent environ 3 minutes par appel à chercher l'information.",
+          "detail": "Sur 9 minutes d'appel, près d'un tiers part dans une base de 15 000 pages souvent obsolète ou contradictoire. Avec 800 conseillers, c'est un gisement de productivité très important."
+        },
+        {
+          "point": "L'objectif n'est pas de « mettre de la GenAI », c'est répondre vite et juste.",
+          "detail": "La GenAI est un moyen. Ce qu'on veut, c'est réduire la durée de traitement, faire remonter la satisfaction et accélérer la montée en compétence malgré 25 % de turnover."
+        },
+        {
+          "point": "Deux limites fortes : l'engagement contractuel et le RGPD, et tout ça en 6 mois.",
+          "detail": "Une réponse fausse sur une garantie peut engager l'assureur. C'est ce qui guide toute la suite."
+        }
+      ]
+    },
+    {
+      "kind": "structure",
+      "title": "Ma démarche",
+      "bullets": [
+        {
+          "point": "D'abord la douleur métier et une mesure de départ, avant toute technologie.",
+          "detail": "Je chiffre le temps de recherche et j'identifie les motifs d'appel où il se concentre."
+        },
+        {
+          "point": "Ensuite, comparer les cas d'usage selon la valeur, la faisabilité et le risque.",
+          "detail": "J'inclus volontairement le chatbot autonome proposé par l'éditeur, pour le juger sur les mêmes critères que les autres options."
+        },
+        {
+          "point": "Enfin, garde-fous, pilote sur un domaine, puis passage à l'échelle mesuré.",
+          "detail": "L'architecture ne vient qu'une fois le cas d'usage choisi."
+        }
+      ]
+    },
+    {
+      "kind": "analysis",
+      "title": "Le vrai problème",
+      "bullets": [
+        {
+          "point": "Le problème de fond : une base documentaire que personne ne possède.",
+          "detail": "Je fais l'hypothèse qu'aucun propriétaire ne tient chaque document à jour, à valider en cadrage. Sans contenus fiables, une GenAI multiplierait simplement les réponses fausses."
+        },
+        {
+          "point": "Le turnover fait que le savoir reste chez les anciens.",
+          "detail": "Il n'est pas dans les outils. Chaque départ allonge donc la formation des nouveaux."
+        },
+        {
+          "point": "Le chatbot autonome maximise le gain mais aussi le risque.",
+          "detail": "S'il se trompe sur une indemnisation, personne ne corrige avant le client. Sur un premier cas d'usage, ce risque n'est pas acceptable."
+        }
+      ]
+    },
+    {
+      "kind": "recommendation",
+      "title": "Assistant interne piloté",
+      "bullets": [
+        {
+          "point": "Je recommande un assistant interne pour les conseillers, avec des réponses sourcées.",
+          "detail": "Le conseiller reste décisionnaire : l'assistant propose, il n'engage jamais l'assureur. On renonce au gain maximal du chatbot pour un risque maîtrisé."
+        },
+        {
+          "point": "Pilote : une équipe, le domaine auto assaini, les motifs sinistres et garanties.",
+          "detail": "Je fais l'hypothèse que ces motifs concentrent l'essentiel du temps de recherche, à confirmer avec les données de téléphonie et du CRM. Aucune donnée client dans les requêtes, avec un LLM hébergé dans l'UE."
+        },
+        {
+          "point": "Feuille de route : cadrage le premier mois, base de référence et design jusqu'à 2,5 mois, pilote jusqu'à 6 mois.",
+          "detail": "Ensuite, entre 6 et 12 mois, on étend domaine par domaine. Puis on ouvre la suggestion de réponse validée, et seulement plus tard un éventuel canal client."
+        },
+        {
+          "point": "Le pilote laisse des fondations réutilisables, pas de la dette technique.",
+          "detail": "Il laisse une base auto versionnée, un cadre d'usage validé par la conformité et le DPO, et un jeu d'évaluation réutilisable pour chaque domaine."
+        }
+      ]
+    },
+    {
+      "kind": "next_steps",
+      "title": "Mesure et suite",
+      "bullets": [
+        {
+          "point": "Critères de succès : -30 % de temps de recherche par rapport à un groupe témoin.",
+          "detail": "Avec une exactitude sourcée d'au moins 90 %, et au moins 70 % des conseillers du pilote qui l'utilisent chaque semaine."
+        },
+        {
+          "point": "Un indicateur de risque : zéro erreur contractuelle non détectée avant réponse.",
+          "detail": "À l'échelle, on vise aussi -1 minute de durée de traitement et -20 % de temps de montée en compétence."
+        },
+        {
+          "point": "Prochaine étape : valider le sponsor et mesurer la situation de départ par motif.",
+          "detail": "En parallèle, je rencontre la conformité et le DPO pour fixer les règles d'usage de la GenAI."
+        }
+      ]
+    }
+  ],
+  "closing": "Le KPI qui compte : -30 % de temps de recherche sur le pilote par rapport à un groupe témoin, sans aucune erreur contractuelle qui atteigne le client. Dès la semaine prochaine, je validerais le sponsor et je mesurerais la situation de départ par motif d'appel.",
+  "differentiators": [
+    {
+      "point": "Recadrer la demande du comex sans la rejeter.",
+      "howToSayIt": "Je garderais l'ambition GenAI du comex, mais je la ferais partir des 3 minutes perdues par appel et non des offres des éditeurs."
+    },
+    {
+      "point": "Traiter la gouvernance des contenus comme une condition de l'IA.",
+      "howToSayIt": "Avant de choisir un modèle, je nommerais un référent métier par domaine, parce qu'une IA branchée sur des documents contradictoires répond faux, simplement plus vite."
+    },
+    {
+      "point": "Anticiper l'adoption et l'excès de confiance.",
+      "howToSayIt": "Je formerais des conseillers ambassadeurs, pour que l'outil soit utilisé et que ses réponses soient vérifiées plutôt que suivies les yeux fermés."
+    }
+  ]
+}

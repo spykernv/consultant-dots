@@ -1,0 +1,341 @@
+{
+  "options": [
+    {
+      "id": "O1",
+      "name": "Assistant interne de recherche",
+      "description": "Le conseiller interroge une base assainie et obtient une réponse sourcée, qu'il reformule lui-même.",
+      "advantages": [
+        "Vise directement les 3 min de recherche par appel",
+        "Le conseiller reste maître de la réponse au client",
+        "Aide aussi les nouveaux, donc réduit la formation"
+      ],
+      "drawbacks": [
+        "Exige d'assainir d'abord la base documentaire",
+        "Gain limité si les conseillers ne l'adoptent pas"
+      ],
+      "conditions": [
+        "La recherche pèse bien ≈ 3 min sur 9",
+        "Des référents métier valident une version de référence"
+      ]
+    },
+    {
+      "id": "O2",
+      "name": "Suggestion de réponse validée",
+      "description": "L'IA rédige une proposition de réponse ou de courrier, que le conseiller valide avant envoi.",
+      "advantages": [
+        "Gain plus large : recherche et rédaction",
+        "Garde un humain dans la boucle",
+        "Prépare un futur canal écrit"
+      ],
+      "drawbacks": [
+        "Nécessite des données clients, donc un cadre RGPD",
+        "Risque de validation « automatique » sans relecture",
+        "Intégration CRM plus lourde en 6 mois"
+      ],
+      "conditions": [
+        "Un cadre LLM et RGPD validé par le DPO",
+        "Beaucoup d'échanges écrits (mails, courriers)"
+      ]
+    },
+    {
+      "id": "O3",
+      "name": "Chatbot autonome face aux clients",
+      "description": "Proposition de l'éditeur : le chatbot répond directement aux assurés, sans conseiller.",
+      "advantages": [
+        "Potentiel de réduction des appels entrants",
+        "Disponible 24h/24"
+      ],
+      "drawbacks": [
+        "Risque maximal : engagement contractuel erroné",
+        "Répéterait les erreurs d'une base obsolète",
+        "Risque RGPD et d'image"
+      ],
+      "conditions": [
+        "Base fiable et gouvernée depuis longtemps",
+        "Limité à des questions sans enjeu contractuel"
+      ]
+    }
+  ],
+  "comparison": {
+    "constraints": [
+      {
+        "label": "Aucun engagement contractuel sans conseiller",
+        "basis": [
+          "Q3"
+        ],
+        "fits": [
+          {
+            "optionId": "O1",
+            "fit": "pass",
+            "note": "Le conseiller formule et valide la réponse"
+          },
+          {
+            "optionId": "O2",
+            "fit": "partial",
+            "note": "Validation humaine, mais risque de relecture automatique"
+          },
+          {
+            "optionId": "O3",
+            "fit": "fail",
+            "note": "Répond seul sur garanties et indemnisation"
+          }
+        ]
+      },
+      {
+        "label": "Pas de données clients sans cadre RGPD",
+        "basis": [
+          "Q4"
+        ],
+        "fits": [
+          {
+            "optionId": "O1",
+            "fit": "pass",
+            "note": "Pilote sans données clients dans les requêtes"
+          },
+          {
+            "optionId": "O2",
+            "fit": "partial",
+            "note": "Possible seulement après validation du DPO"
+          },
+          {
+            "optionId": "O3",
+            "fit": "partial",
+            "note": "Seulement si limité aux questions génériques"
+          }
+        ]
+      },
+      {
+        "label": "Résultats mesurables sous 6 mois",
+        "basis": [
+          "F7",
+          "Q5"
+        ],
+        "fits": [
+          {
+            "optionId": "O1",
+            "fit": "pass",
+            "note": "Un domaine assaini, gain mesurable avant/après"
+          },
+          {
+            "optionId": "O2",
+            "fit": "partial",
+            "note": "Intégration CRM et cadre RGPD à construire"
+          },
+          {
+            "optionId": "O3",
+            "fit": "fail",
+            "note": "Exige d'abord une base fiable et gouvernée"
+          }
+        ]
+      }
+    ],
+    "criteria": [
+      {
+        "label": "Maîtrise du risque",
+        "scores": [
+          {
+            "optionId": "O1",
+            "score": 5
+          },
+          {
+            "optionId": "O2",
+            "score": 3
+          },
+          {
+            "optionId": "O3",
+            "score": 1
+          }
+        ]
+      },
+      {
+        "label": "Ampleur du gain métier",
+        "scores": [
+          {
+            "optionId": "O1",
+            "score": 3
+          },
+          {
+            "optionId": "O2",
+            "score": 4
+          },
+          {
+            "optionId": "O3",
+            "score": 5
+          }
+        ]
+      },
+      {
+        "label": "Rapidité de mise en valeur",
+        "scores": [
+          {
+            "optionId": "O1",
+            "score": 4
+          },
+          {
+            "optionId": "O2",
+            "score": 2
+          },
+          {
+            "optionId": "O3",
+            "score": 2
+          }
+        ]
+      },
+      {
+        "label": "Fondations réutilisables",
+        "scores": [
+          {
+            "optionId": "O1",
+            "score": 5
+          },
+          {
+            "optionId": "O2",
+            "score": 4
+          },
+          {
+            "optionId": "O3",
+            "score": 2
+          }
+        ]
+      }
+    ]
+  },
+  "recommendation": {
+    "optionId": "O1",
+    "statement": "Lancer un assistant interne pour les conseillers, sur un domaine assaini, avec réponses sourcées et conseiller décisionnaire.",
+    "rationale": "On sacrifie le gain maximal du chatbot pour un risque maîtrisé et une valeur mesurable en 6 mois. La base assainie et sa gouvernance serviront ensuite aux options O2 puis O3.",
+    "dependsOn": [
+      "Q1",
+      "Q2",
+      "Q3",
+      "Q4",
+      "Q5",
+      "A1",
+      "A2"
+    ],
+    "pivots": [
+      {
+        "basis": "Q2",
+        "question": "Le temps perdu vient-il surtout de la recherche ?",
+        "assumed": "Recherche concentrée sur sinistres, garanties",
+        "ifInstead": "Temps perdu surtout en rédaction écrite",
+        "thenOptionId": "O2",
+        "consequence": "On cible la suggestion de réponse validée, sous cadre RGPD."
+      },
+      {
+        "basis": "Q1",
+        "question": "Des référents métier peuvent-ils valider le contenu ?",
+        "assumed": "Référents nommés pour le domaine auto",
+        "ifInstead": "Aucun référent disponible à court terme",
+        "thenOptionId": null,
+        "consequence": "On commence par l'assainissement ; le pilote glisse, 6 mois menacés."
+      },
+      {
+        "basis": "Q4",
+        "question": "Un cadre LLM et RGPD existe-t-il ?",
+        "assumed": "Aucun cadre LLM, pas de données clients",
+        "ifInstead": "Cadre LLM et RGPD déjà validé",
+        "thenOptionId": null,
+        "consequence": "O1 reste, mais on ajoute le contexte client et on accélère O2."
+      }
+    ]
+  },
+  "targetBlocks": [
+    {
+      "id": "B1",
+      "name": "Base de connaissance de référence",
+      "role": "Contenus assainis, versionnés, une seule version qui fait foi par sujet."
+    },
+    {
+      "id": "B2",
+      "name": "Gouvernance des contenus",
+      "role": "Référents métier par domaine, cycle de mise à jour, validation conformité."
+    },
+    {
+      "id": "B3",
+      "name": "Assistant sourcé (RAG)",
+      "role": "Répond depuis B1 uniquement, cite la source, LLM hébergé en UE."
+    },
+    {
+      "id": "B4",
+      "name": "Garde-fous et traçabilité",
+      "role": "Pas de données clients au pilote, journalisation, conseiller décisionnaire."
+    },
+    {
+      "id": "B5",
+      "name": "Référentiel KPI et évaluation",
+      "role": "Référence avant/après : temps de traitement, recherche, exactitude, adoption."
+    },
+    {
+      "id": "B6",
+      "name": "Adoption et formation",
+      "role": "Conseillers ambassadeurs, remontée des erreurs, intégration au parcours des nouveaux."
+    }
+  ],
+  "initiatives": [
+    {
+      "name": "Assistant interne domaine auto",
+      "value": 5,
+      "feasibility": 4,
+      "risk": 2,
+      "timeToValue": 4,
+      "reuse": 5,
+      "verdict": "pilot",
+      "comment": "Vise les 3 min de recherche, conseiller maître, base réutilisable."
+    },
+    {
+      "name": "Assainissement base documentaire",
+      "value": 4,
+      "feasibility": 3,
+      "risk": 1,
+      "timeToValue": 3,
+      "reuse": 5,
+      "verdict": "next",
+      "comment": "Prérequis du pilote sur un domaine, puis étendu domaine par domaine."
+    },
+    {
+      "name": "Résumé d'appel dans le CRM",
+      "value": 3,
+      "feasibility": 3,
+      "risk": 3,
+      "timeToValue": 3,
+      "reuse": 3,
+      "verdict": "next",
+      "comment": "Faible risque contractuel, mais données clients : cadre RGPD d'abord."
+    },
+    {
+      "name": "Suggestion de réponse validée",
+      "value": 4,
+      "feasibility": 2,
+      "risk": 3,
+      "timeToValue": 2,
+      "reuse": 4,
+      "verdict": "later",
+      "comment": "Après le pilote, une fois le cadre LLM et RGPD en place."
+    },
+    {
+      "name": "Chatbot autonome clients",
+      "value": 4,
+      "feasibility": 2,
+      "risk": 5,
+      "timeToValue": 2,
+      "reuse": 2,
+      "verdict": "avoid",
+      "comment": "Risque contractuel maximal sur une base aujourd'hui peu fiable."
+    }
+  ],
+  "traps": [
+    {
+      "reflex": "E9",
+      "whyHere": "Le chatbot autonome engage l'assureur : que se passe-t-il s'il se trompe sur une garantie ?"
+    },
+    {
+      "reflex": "E1",
+      "whyHere": "Le comex part des offres éditeurs avant d'avoir choisi le cas d'usage et assaini la base."
+    },
+    {
+      "reflex": "E6",
+      "whyHere": "Pas de mesure par motif d'appel : sans référence, le gain des 3 min restera invérifiable."
+    }
+  ]
+}

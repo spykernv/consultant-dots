@@ -1,0 +1,197 @@
+{
+  "diagram": {
+    "direction": "LR",
+    "groups": [
+      {
+        "id": "crc",
+        "label": "Centre relation client",
+        "kind": "zone",
+        "parentId": null
+      },
+      {
+        "id": "rgpd",
+        "label": "Données clients RGPD",
+        "kind": "local_boundary",
+        "parentId": null
+      },
+      {
+        "id": "metier",
+        "label": "Directions métier",
+        "kind": "zone",
+        "parentId": null
+      }
+    ],
+    "nodes": [
+      {
+        "id": "client",
+        "label": "Clients assurés",
+        "kind": "actor",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "cons",
+        "label": "800 conseillers",
+        "kind": "actor",
+        "groupId": "crc",
+        "status": "existing"
+      },
+      {
+        "id": "appel",
+        "label": "Appel de 9 minutes",
+        "kind": "process",
+        "groupId": "crc",
+        "status": "existing"
+      },
+      {
+        "id": "recherche",
+        "label": "Recherche manuelle d'information",
+        "kind": "process",
+        "groupId": "crc",
+        "status": "existing"
+      },
+      {
+        "id": "crm",
+        "label": "CRM et téléphonie",
+        "kind": "system",
+        "groupId": "rgpd",
+        "status": "assumption"
+      },
+      {
+        "id": "doc",
+        "label": "Base documentaire 15 000 pages",
+        "kind": "data",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "proprio",
+        "label": "Propriétaires contenus flous",
+        "kind": "actor",
+        "groupId": "metier",
+        "status": "assumption"
+      },
+      {
+        "id": "p_temps",
+        "label": "~3 min de recherche",
+        "kind": "pain_point",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "p_obso",
+        "label": "Contenus obsolètes, contradictoires",
+        "kind": "pain_point",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "p_risque",
+        "label": "Risque d'engagement contractuel",
+        "kind": "constraint",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "p_sat",
+        "label": "Satisfaction client en baisse",
+        "kind": "pain_point",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "p_turn",
+        "label": "Turnover 25 %, formations longues",
+        "kind": "pain_point",
+        "groupId": null,
+        "status": "existing"
+      },
+      {
+        "id": "comex",
+        "label": "Comex : GenAI à 6 mois",
+        "kind": "actor",
+        "groupId": null,
+        "status": "existing"
+      }
+    ],
+    "edges": [
+      {
+        "from": "client",
+        "to": "appel",
+        "label": "appelle",
+        "style": "thick"
+      },
+      {
+        "from": "cons",
+        "to": "appel",
+        "label": "traite",
+        "style": "solid"
+      },
+      {
+        "from": "cons",
+        "to": "crm",
+        "label": "consulte",
+        "style": "solid"
+      },
+      {
+        "from": "appel",
+        "to": "recherche",
+        "label": "déclenche",
+        "style": "solid"
+      },
+      {
+        "from": "recherche",
+        "to": "doc",
+        "label": "fouille",
+        "style": "dashed"
+      },
+      {
+        "from": "proprio",
+        "to": "doc",
+        "label": "mise à jour",
+        "style": "dashed"
+      },
+      {
+        "from": "doc",
+        "to": "p_obso",
+        "label": null,
+        "style": "solid"
+      },
+      {
+        "from": "recherche",
+        "to": "p_temps",
+        "label": null,
+        "style": "thick"
+      },
+      {
+        "from": "p_obso",
+        "to": "p_risque",
+        "label": "réponses erronées",
+        "style": "solid"
+      },
+      {
+        "from": "p_temps",
+        "to": "p_sat",
+        "label": null,
+        "style": "solid"
+      },
+      {
+        "from": "p_turn",
+        "to": "cons",
+        "label": "novices",
+        "style": "dashed"
+      },
+      {
+        "from": "comex",
+        "to": "crc",
+        "label": "pression GenAI",
+        "style": "dashed"
+      }
+    ]
+  },
+  "bottlenecks": [
+    "Base de 15 000 pages sans propriétaire clair : contenus obsolètes et contradictoires (F5, A1)",
+    "Recherche manuelle ≈ 3 min sur 9 min par appel (F2, F3)",
+    "Turnover de 25 % : conseillers novices, dépendants d'une documentation peu fiable (F6, A4)"
+  ]
+}

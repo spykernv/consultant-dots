@@ -1,0 +1,119 @@
+{
+  "duration": "≈ 3 min 30",
+  "opening": "Je vais d'abord reformuler l'enjeu, puis présenter ma démarche, mon diagnostic, ma recommandation avec sa feuille de route, et je terminerai par la façon dont on mesure le succès.",
+  "sections": [
+    {
+      "kind": "reformulation",
+      "title": "L'enjeu réel",
+      "bullets": [
+        {
+          "point": "La DG veut piloter le groupe avec des chiffres fiables, rapides et partagés.",
+          "detail": "Aujourd'hui, la consolidation se fait à la main sous Excel, prend environ 10 jours et les chiffres sont contestés en CODIR."
+        },
+        {
+          "point": "La data platform est un moyen, pas l'objectif en soi.",
+          "detail": "Si les définitions de marge, de taux de service et d'OTD restent différentes, une plateforme produirait simplement plus vite des chiffres toujours contestés."
+        },
+        {
+          "point": "Deux contraintes structurantes : la résidence des données en Allemagne et une DSI de 15 personnes.",
+          "detail": "Le client a confirmé que les données RH et clients nominatives restent en Allemagne, mais que des agrégats anonymisés peuvent remonter au groupe."
+        }
+      ]
+    },
+    {
+      "kind": "structure",
+      "title": "Ma démarche",
+      "bullets": [
+        {
+          "point": "D'abord les usages : quelles décisions le CODIR prend-il avec ces KPIs ?",
+          "detail": "Je fais l'hypothèse que la priorité est le reporting mensuel sur la marge, le taux de service et l'OTD. C'est à valider en cadrage."
+        },
+        {
+          "point": "Ensuite, l'existant : pour chaque KPI, sa source, son producteur, son propriétaire et sa qualité.",
+          "detail": "On cartographie les trois ERP et on repère où les calculs divergent."
+        },
+        {
+          "point": "Puis la gouvernance et le choix de l'architecture, avant toute technologie.",
+          "detail": "On compare trois modèles : centralisé, fédéré ou hybride, selon la contrainte allemande et la capacité de la DSI."
+        }
+      ]
+    },
+    {
+      "kind": "analysis",
+      "title": "Diagnostic",
+      "bullets": [
+        {
+          "point": "La cause première, c'est la gouvernance : personne ne tranche les définitions.",
+          "detail": "Je fais l'hypothèse qu'aucun propriétaire groupe des KPIs n'est désigné aujourd'hui, ce qui explique les contestations en CODIR."
+        },
+        {
+          "point": "Il n'existe pas de référentiel commun pour les produits, les clients et les sites.",
+          "detail": "C'est pour cette raison que croiser les données commerciales et industrielles est si difficile. C'est une hypothèse à confirmer."
+        },
+        {
+          "point": "La consolidation sous Excel ne laisse ni traçabilité ni contrôle qualité.",
+          "detail": "Personne ne peut remonter d'un chiffre du CODIR jusqu'à l'ERP qui l'a produit."
+        },
+        {
+          "point": "Le CODIR n'a besoin que d'agrégats, donc rien n'impose de tout centraliser.",
+          "detail": "C'est le point clé : la contrainte allemande devient gérable si seuls des agrégats remontent au groupe."
+        }
+      ]
+    },
+    {
+      "kind": "recommendation",
+      "title": "Hybride et pilote OTD",
+      "bullets": [
+        {
+          "point": "Je recommande une architecture hybride : les agrégats au centre, le nominatif reste local.",
+          "detail": "Cette option respecte la contrainte allemande et reste à la portée de la DSI. La contrepartie est que le croisement fin se limite aux agrégats partagés."
+        },
+        {
+          "point": "La gouvernance passe avant la plateforme : le DAF arbitre, avec un data owner par KPI.",
+          "detail": "Je fais l'hypothèse que le DAF est le bon sponsor, c'est à valider. Un comité KPI mensuel validerait les définitions."
+        },
+        {
+          "point": "Le pilote porte sur l'OTD harmonisé entre la France et l'Espagne, en 4 à 6 mois.",
+          "detail": "Il couvre toute la chaîne : une définition, un pipeline batch, un tableau de bord CODIR. Ce KPI est contesté et ne contient pas de données nominatives."
+        },
+        {
+          "point": "Ensuite, extension à l'Allemagne, puis à la marge et au taux de service, sous 12 mois.",
+          "detail": "Le pilote laisse des fondations réutilisables : le comité KPI, le contrat d'interface et les premières tables de correspondance des sites."
+        }
+      ]
+    },
+    {
+      "kind": "next_steps",
+      "title": "Mesure et suite",
+      "bullets": [
+        {
+          "point": "Délai de reporting : de 10 jours à J+2 sur le pilote.",
+          "detail": "L'objectif est de passer sous 3 jours pour tout le groupe à 12 mois."
+        },
+        {
+          "point": "Zéro contestation de l'OTD sur deux CODIR consécutifs.",
+          "detail": "Le nombre actuel de contestations est à mesurer dès le cadrage pour disposer d'une baseline."
+        },
+        {
+          "point": "L'adoption : le contrôle de gestion abandonne Excel pour l'OTD.",
+          "detail": "Sinon, on se retrouve avec deux versions de la vérité, et on n'a rien gagné."
+        }
+      ]
+    }
+  ],
+  "closing": "Le KPI principal, c'est le délai de reporting, qui doit passer de 10 jours à J+2 sur l'OTD, sans aucune contestation en CODIR. La prochaine étape serait un atelier de cadrage avec le DAF et le contrôle de gestion pour valider les usages et le sponsor.",
+  "differentiators": [
+    {
+      "point": "Challenger la prémisse : la plateforme ne règle pas un problème de définitions.",
+      "howToSayIt": "Avant de parler de plateforme, je poserais la question de savoir qui décide de ce qu'est l'OTD pour le groupe."
+    },
+    {
+      "point": "Distinguer l'accès logique aux données de leur centralisation physique.",
+      "howToSayIt": "Le CODIR a besoin d'un chiffre commun, pas d'avoir toutes les données au même endroit : les agrégats suffisent."
+    },
+    {
+      "point": "L'adoption comme vrai critère de succès.",
+      "howToSayIt": "Pour moi, le pilote aura réussi le jour où le CODIR ne discutera plus que les chiffres du tableau de bord commun."
+    }
+  ]
+}

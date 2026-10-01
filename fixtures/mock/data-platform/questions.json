@@ -1,0 +1,39 @@
+{
+  "questions": [
+    {
+      "id": "Q1",
+      "question": "Quelles décisions la DG veut-elle prendre avec cette vision consolidée, et à quel rythme ?",
+      "whyItMatters": "Le besoin métier fixe le périmètre et le premier cas d'usage, pas la technologie.",
+      "decisionImpact": "Périmètre et pilote : reporting financier mensuel vs pilotage opérationnel croisé commerce-industrie",
+      "defaultAssumption": "Priorité au reporting mensuel du comité de direction : marge, taux de service, OTD."
+    },
+    {
+      "id": "Q2",
+      "question": "Quelles données RH et clients allemandes ne peuvent pas sortir, et en sont-elles besoin au niveau groupe ?",
+      "whyItMatters": "Le périmètre exact de la contrainte détermine si la centralisation physique est possible.",
+      "decisionImpact": "Centralisé vs fédéré vs hybride",
+      "defaultAssumption": "Les données nominatives restent en Allemagne ; les agrégats anonymisés peuvent être partagés."
+    },
+    {
+      "id": "Q3",
+      "question": "Qui tranche une définition de KPI commune : le contrôle de gestion groupe ou chaque filiale ?",
+      "whyItMatters": "Sans arbitre, l'harmonisation des définitions bloque avant toute technique.",
+      "decisionImpact": "Gouvernance centralisée (sponsor DG, owner groupe) vs modèle fédéré avec data owners filiales",
+      "defaultAssumption": "Le DAF groupe est sponsor, avec un data owner par filiale et par KPI."
+    },
+    {
+      "id": "Q4",
+      "question": "Quels ERP par filiale, avec quelles interfaces, et y a-t-il déjà un socle data ou cloud groupe ?",
+      "whyItMatters": "L'existant conditionne le mode d'intégration et l'effort pour une DSI de 15 personnes.",
+      "decisionImpact": "Batch/ELT vs API ; réutiliser l'existant vs construire ; build interne vs partenaire",
+      "defaultAssumption": "ERP hétérogènes sans socle commun ; un batch mensuel puis quotidien suffit."
+    },
+    {
+      "id": "Q5",
+      "question": "Quel budget, quel délai, et quelle capacité côté filiales pour porter le projet ?",
+      "whyItMatters": "Une DSI de 15 personnes ne peut pas tout porter ; il faut calibrer l'ambition.",
+      "decisionImpact": "Taille du pilote et rythme de passage à l'échelle ; part d'externalisation",
+      "defaultAssumption": "Premier résultat visible attendu sous 4 à 6 mois, avec un appui externe."
+    }
+  ]
+}

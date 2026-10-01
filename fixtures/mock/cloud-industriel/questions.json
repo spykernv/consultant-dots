@@ -1,0 +1,39 @@
+{
+  "questions": [
+    {
+      "id": "Q1",
+      "question": "Quel est l'objectif business prioritaire derrière « tout migrer » : baisser les coûts, accélérer les déploiements ou sortir du contrat à temps ?",
+      "whyItMatters": "Le cloud est un moyen. L'objectif fixe le critère de décision application par application.",
+      "decisionImpact": "Rehost rapide pour tenir 18 mois vs modernisation (replatform/refactor) plus lente",
+      "defaultAssumption": "Priorité : sortir du datacenter sans rupture de production dans 18 mois, puis réduire le coût de run."
+    },
+    {
+      "id": "Q2",
+      "question": "Parmi les 120 applications, lesquelles pilotent les lignes de production, et avec quelle latence et quelle disponibilité exigées ?",
+      "whyItMatters": "Une coupure réseau vers le cloud ne doit jamais arrêter une ligne.",
+      "decisionImpact": "Cloud vs maintien sur site (edge / on-premise local) pour le MES et les applications de pilotage",
+      "defaultAssumption": "Environ 15-20 % des applications sont critiques production et resteront au plus près des sites."
+    },
+    {
+      "id": "Q3",
+      "question": "Existe-t-il une cartographie à jour des applications, de leurs dépendances et de leurs propriétaires métier ?",
+      "whyItMatters": "Sans cartographie, impossible de découper des vagues sans casser les flux entre applications.",
+      "decisionImpact": "Lancer les vagues de migration tout de suite vs commencer par 6-8 semaines d'inventaire",
+      "defaultAssumption": "Cartographie partielle et ancienne : un inventaire rapide des applications est un prérequis."
+    },
+    {
+      "id": "Q4",
+      "question": "Le contrat d'infogérance peut-il être prolongé ou réduit en périmètre au-delà de 18 mois ?",
+      "whyItMatters": "L'échéance est la contrainte principale. Une sortie ferme impose de migrer vite, sans moderniser.",
+      "decisionImpact": "Big bang « lift and shift » sous contrainte vs vagues progressives avec modernisation",
+      "defaultAssumption": "Prolongation partielle négociable pour un périmètre réduit (applications critiques)."
+    },
+    {
+      "id": "Q5",
+      "question": "Qui porte la décision et le run cible : DSI seule, avec les directeurs de site et la production ? Avec quelles compétences cloud en interne ?",
+      "whyItMatters": "Les sites utilisent le MES au quotidien. Sans leur adhésion ni compétences cloud, pas d'adoption.",
+      "decisionImpact": "Opéré en interne avec montée en compétences vs service managé par un partenaire",
+      "defaultAssumption": "Décision portée par la DSI, compétences cloud faibles : partenaire au départ, plus un plan de montée en compétences."
+    }
+  ]
+}

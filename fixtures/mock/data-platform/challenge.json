@@ -1,0 +1,70 @@
+{
+  "level": "a_retravailler",
+  "verdict": "Tu passes directement à la solution technique sans comprendre pourquoi les chiffres sont contestés. Tu centralises aussi des données qui ne peuvent pas quitter l'Allemagne. Avec des KPIs non harmonisés, ta plateforme produirait plus vite des chiffres toujours contestés.",
+  "flags": [
+    {
+      "reflex": "E1",
+      "severity": "high",
+      "quote": "Je propose de créer un data lake groupe sur Azure pour centraliser toutes les données",
+      "issue": "Tu proposes l'architecture sans cadrage ni diagnostic : les définitions de KPIs divergentes sont ignorées.",
+      "interviewerQuestion": "Pourquoi les chiffres sont-ils contestés en CODIR aujourd'hui, et un data lake règle-t-il ce problème ?",
+      "fix": "D'abord reformuler l'objectif : des chiffres fiables et partagés. Ensuite diagnostiquer : la cause racine, ce sont les définitions divergentes de marge, taux de service et OTD, pas l'outil."
+    },
+    {
+      "reflex": "E8",
+      "severity": "high",
+      "quote": "centraliser toutes les données des trois filiales",
+      "issue": "Tu centralises par défaut alors que des données RH et clients doivent rester en Allemagne.",
+      "interviewerQuestion": "Comment fais-tu avec les données RH et clients allemandes qui ne peuvent pas quitter le pays ?",
+      "fix": "Le reporting groupe a sans doute besoin d'agrégats seulement. Je comparerais centralisé, fédéré et hybride, avec les agrégats au centre et le nominatif en Allemagne."
+    },
+    {
+      "reflex": "E4",
+      "severity": "high",
+      "quote": "La DSI pilote le projet",
+      "issue": "La gouvernance métier est absente : personne ne tranche les définitions de KPIs entre filiales.",
+      "interviewerQuestion": "Qui décide de la définition commune de l'OTD si l'Espagne et l'Allemagne ne sont pas d'accord ?",
+      "fix": "Le sponsor est la DG. La DAF ou le contrôle de gestion possède les définitions, les filiales possèdent leurs données. La DSI de 15 personnes construit, elle ne tranche pas."
+    },
+    {
+      "reflex": "E3",
+      "severity": "medium",
+      "quote": "On connecte les trois ERP par API en temps réel",
+      "issue": "Temps réel et API non justifiés pour un reporting mensuel ; Azure et Power BI choisis sans critères.",
+      "interviewerQuestion": "Pourquoi du temps réel pour un reporting de clôture mensuelle ?",
+      "fix": "Le choix d'intégration dépend de la latence, des volumes et des interfaces des ERP. Pour du mensuel, un batch ou de l'ELT quotidien suffit probablement."
+    },
+    {
+      "reflex": "E7",
+      "severity": "medium",
+      "quote": "on déploie sur les trois filiales en même temps d'ici 6 mois",
+      "issue": "Big bang irréaliste pour une DSI de 15 personnes, sans pilote pour valider l'approche.",
+      "interviewerQuestion": "Quel est ton plan si la première filiale bloque tout le déploiement ?",
+      "fix": "Commencer par un pilote vertical : un KPI commun (OTD), deux filiales, un pipeline, un dashboard. Ensuite, réutiliser ces fondations pour le passage à l'échelle."
+    },
+    {
+      "reflex": "E6",
+      "severity": "medium",
+      "quote": "",
+      "issue": "Aucun KPI ni baseline pour prouver que la transformation fonctionne.",
+      "interviewerQuestion": "Comment prouves-tu à la DG dans 6 mois que ça a marché ?",
+      "fix": "Baseline : 10 jours de consolidation et un nombre de chiffres contestés par CODIR. Cibles : délai de production, part des KPIs à définition commune, usage du dashboard par rapport à Excel."
+    }
+  ],
+  "strengths": [
+    "Tu prends position et proposes une vision de bout en bout, des sources jusqu'au dashboard DG.",
+    "Tu relies Power BI à un utilisateur concret : la DG."
+  ],
+  "missing": [
+    "Harmonisation des définitions de KPIs (marge, taux de service, OTD), la vraie cause racine",
+    "Contrainte de résidence des données allemandes et comparaison centralisé / fédéré / hybride",
+    "Adoption par le contrôle de gestion, pour que les équipes arrêtent Excel",
+    "Analyse des risques, notamment le refus des filiales et la capacité de la DSI"
+  ],
+  "nextVersion": [
+    "Commence par reformuler l'objectif métier et diagnostiquer pourquoi les chiffres sont contestés, avant de parler technologie.",
+    "Présente trois options (centralisé, fédéré, hybride) et tranche au regard de la contrainte allemande.",
+    "Désigne un propriétaire métier des KPIs et une gouvernance, avec la DG en sponsor.",
+    "Remplace le big bang par un pilote OTD sur deux filiales, avec une baseline de 10 jours et des KPIs de succès."
+  ]
+}

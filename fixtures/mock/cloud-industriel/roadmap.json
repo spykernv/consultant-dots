@@ -1,0 +1,194 @@
+{
+  "phases": [
+    {
+      "name": "Phase 1 — Cadrage & inventaire du portefeuille",
+      "timing": "0–2 mois",
+      "objective": "Savoir quoi faire de chacune des 120 applications, et qui décide.",
+      "actions": [
+        "Inventorier les 120 applications : propriétaire, criticité, dépendances, coût (B1).",
+        "Identifier avec les 5 sites les applications qui pilotent les lignes (Q2).",
+        "Mesurer les baselines : coût de run, délai de déploiement, incidents.",
+        "Ouvrir la négociation de réversibilité avec l'infogérant (Q4)."
+      ],
+      "deliverables": [
+        "Référentiel du portefeuille avec une décision cible par application",
+        "Business case chiffré (A5) et baselines validées",
+        "Comité de gouvernance DSI-sites-finance installé (B6)"
+      ],
+      "decisions": [
+        "Valider la cible hybride plutôt que le « tout cloud »",
+        "Nommer un propriétaire métier par application"
+      ],
+      "dependencies": [
+        "Disponibilité des directeurs de site et des métiers",
+        "Accès aux données de l'infogérant"
+      ],
+      "kpis": [
+        "% des applications avec une décision cible",
+        "% des applications avec un propriétaire métier nommé"
+      ]
+    },
+    {
+      "name": "Phase 2 — Socle cloud & pilote",
+      "timing": "2–6 mois",
+      "objective": "Poser les fondations réutilisables sur une application réelle.",
+      "actions": [
+        "Construire la landing zone : réseau, sécurité, identités, supervision (B2).",
+        "Mettre en place la chaîne CI/CD (B5).",
+        "Migrer l'application pilote en replatform.",
+        "Retirer les premières applications redondantes."
+      ],
+      "deliverables": [
+        "Landing zone opérationnelle et documentée",
+        "Application pilote en production dans le cloud",
+        "Retour d'expérience et modèle de migration réutilisable"
+      ],
+      "decisions": [
+        "Choix du fournisseur cloud et du partenaire d'intégration",
+        "Go / no-go des vagues selon les critères du pilote"
+      ],
+      "dependencies": [
+        "Référentiel du portefeuille de la phase 1",
+        "Partenaire cloud contractualisé (Q5)"
+      ],
+      "kpis": [
+        "Délai de déploiement de l'application pilote",
+        "Nombre d'applications retirées"
+      ]
+    },
+    {
+      "name": "Phase 3 — Vagues de migration",
+      "timing": "6–15 mois",
+      "objective": "Vider le datacenter du non-critique en réutilisant le socle.",
+      "actions": [
+        "Vague 1 : rehost ou replatform des applications support peu dépendantes.",
+        "Vague 2 : applications à dépendances modérées, flux sites-cloud (B4).",
+        "Choisir les flux (API, batch, ETL) selon la latence et les volumes.",
+        "Transférer les compétences du partenaire aux équipes internes."
+      ],
+      "deliverables": [
+        "Plan de vagues suivi en comité",
+        "Flux d'intégration hybride sites-cloud en production",
+        "Plan de montée en compétences exécuté"
+      ],
+      "decisions": [
+        "Arbitrer rehost ou modernisation pour chaque application legacy",
+        "Figer le périmètre qui reste chez l'infogérant"
+      ],
+      "dependencies": [
+        "Landing zone et CI/CD validés au pilote",
+        "Cartographie des dépendances fiable"
+      ],
+      "kpis": [
+        "% du portefeuille traité par vague",
+        "Zéro arrêt de ligne lié à la migration"
+      ]
+    },
+    {
+      "name": "Phase 4 — Sortie du datacenter & socle industriel",
+      "timing": "15–18 mois, puis au-delà",
+      "objective": "Tenir l'échéance sans jamais risquer la production.",
+      "actions": [
+        "Héberger MES et pilotage des lignes au plus près des sites (B3).",
+        "Basculer le périmètre critique résiduel sur un contrat d'infogérance réduit.",
+        "Lancer le programme d'harmonisation du MES avec les directeurs de site."
+      ],
+      "deliverables": [
+        "Datacenter historique fermé ou réduit au périmètre critique",
+        "Feuille de route d'harmonisation du MES"
+      ],
+      "decisions": [
+        "Durée et périmètre de la prolongation partielle (A4)",
+        "Version MES cible commune aux 5 sites"
+      ],
+      "dependencies": [
+        "Accord contractuel avec l'infogérant",
+        "Adhésion des directeurs de site"
+      ],
+      "kpis": [
+        "Coût de run vs baseline",
+        "Disponibilité des applications de pilotage des lignes"
+      ]
+    }
+  ],
+  "pilot": {
+    "initiative": "Application support non critique",
+    "scope": "1 application de gestion → 1 propriétaire métier → landing zone → pipeline CI/CD → production cloud avec supervision et KPIs",
+    "why": "Représentative du portefeuille non critique, sans lien avec les lignes. Elle pose la landing zone et le CI/CD réutilisés par toutes les vagues. Les équipes apprennent sans risque pour la production.",
+    "successCriteria": [
+      "Délai de déploiement passé de plusieurs semaines à moins de 3 jours",
+      "Coût de run de l'application inférieur ou égal à la baseline on-premise",
+      "Zéro incident majeur sur les 2 premiers mois en production"
+    ],
+    "reusableFoundations": [
+      "Landing zone : réseau, sécurité, identités, supervision",
+      "Chaîne CI/CD standard",
+      "Modèle de migration et grille de décision par application"
+    ]
+  },
+  "kpis": [
+    {
+      "name": "Coût de run de l'infrastructure et de l'infogérance",
+      "type": "business",
+      "baseline": "Élevé (F4), montant à mesurer au cadrage",
+      "target": "Baisse chiffrée dans le business case, suivie à 18 mois"
+    },
+    {
+      "name": "Délai moyen de déploiement",
+      "type": "technical",
+      "baseline": "Plusieurs semaines (F5)",
+      "target": "Quelques jours sur les applications migrées"
+    },
+    {
+      "name": "Part du portefeuille traitée (retirée, migrée ou conservée sur site)",
+      "type": "business",
+      "baseline": "0 sur ~120 applications (F2)",
+      "target": "100 % décidées à 2 mois, non critique traité à 18 mois"
+    },
+    {
+      "name": "Arrêts de ligne causés par la transformation",
+      "type": "risk",
+      "baseline": "à mesurer au cadrage",
+      "target": "Zéro"
+    },
+    {
+      "name": "Applications avec un propriétaire métier nommé",
+      "type": "adoption",
+      "baseline": "à mesurer au cadrage",
+      "target": "100 % à la fin du cadrage"
+    },
+    {
+      "name": "Déploiements réalisés par les équipes internes via CI/CD",
+      "type": "adoption",
+      "baseline": "à mesurer au cadrage",
+      "target": "Majorité des déploiements en fin de phase 3"
+    }
+  ],
+  "risks": [
+    {
+      "risk": "L'échéance de 18 mois est tenue au prix de migrations précipitées.",
+      "impact": "Legacy déplacé tel quel : coûts cloud élevés, maintenance inchangée.",
+      "mitigation": "Négocier tôt une prolongation partielle et retirer avant de migrer."
+    },
+    {
+      "risk": "Dépendances cachées entre applications de gestion et MES ou automates.",
+      "impact": "Une migration « non critique » provoque un arrêt de ligne.",
+      "mitigation": "Cartographier les flux, tester sur site et prévoir un retour arrière."
+    },
+    {
+      "risk": "L'infogérant freine la réversibilité en fin de contrat.",
+      "impact": "Accès limité à l'existant, retards et surcoûts.",
+      "mitigation": "Clauses de réversibilité et accès aux données négociés dès la phase 1."
+    },
+    {
+      "risk": "Le DSI et la finance attendent le « tout cloud » annoncé.",
+      "impact": "Perte du sponsor si la cible hybride paraît un recul.",
+      "mitigation": "Présenter le business case chiffré par application en comité."
+    },
+    {
+      "risk": "Dépendance durable au partenaire cloud, faute de compétences internes.",
+      "impact": "Run cloud coûteux et non maîtrisé par la DSI.",
+      "mitigation": "Transfert de compétences dans le contrat, binômes dès le pilote."
+    }
+  ]
+}

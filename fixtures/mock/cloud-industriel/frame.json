@@ -1,0 +1,152 @@
+{
+  "reformulation": "Sortir du datacenter avant la fin de l'infogérance (18 mois), baisser les coûts et accélérer les déploiements, sans jamais arrêter les lignes de production.",
+  "businessObjectives": [
+    {
+      "text": "Réduire les coûts d'infrastructure et de maintenance du SI",
+      "source": "case"
+    },
+    {
+      "text": "Accélérer les déploiements : passer de plusieurs semaines à quelques jours",
+      "source": "case"
+    },
+    {
+      "text": "Garantir la continuité de la production pendant et après la transition",
+      "source": "case"
+    },
+    {
+      "text": "Harmoniser le MES entre les 5 sites pour simplifier le run et le pilotage",
+      "source": "assumption"
+    }
+  ],
+  "painPoints": [
+    "Coûts d'infrastructure élevés",
+    "Maintenance complexe, alourdie par le legacy des années 2000",
+    "Chaque déploiement prend plusieurs semaines",
+    "Versions du MES différentes selon les sites",
+    "Échéance du contrat d'infogérance dans 18 mois, qui fixe un délai non négociable"
+  ],
+  "constraints": [
+    {
+      "text": "Fin du contrat d'infogérance dans 18 mois",
+      "type": "contractual",
+      "source": "case"
+    },
+    {
+      "text": "Applications de pilotage des lignes : aucune interruption tolérée",
+      "type": "availability",
+      "source": "case"
+    },
+    {
+      "text": "Legacy spécifique des années 2000, peu compatible avec le cloud",
+      "type": "legacy",
+      "source": "case"
+    },
+    {
+      "text": "Le pilotage des lignes impose une faible latence : certaines briques devront rester sur site",
+      "type": "availability",
+      "source": "assumption"
+    },
+    {
+      "text": "Compétences cloud internes probablement limitées",
+      "type": "skills",
+      "source": "assumption"
+    }
+  ],
+  "stakeholders": [
+    {
+      "name": "DSI",
+      "role": "Sponsor, porte l'intention « tout cloud » et décide",
+      "source": "case"
+    },
+    {
+      "name": "Directeurs des 5 sites / production",
+      "role": "Utilisateurs du MES, impactés par tout risque d'arrêt",
+      "source": "case"
+    },
+    {
+      "name": "Infogérant actuel",
+      "role": "Exploite le datacenter, doit organiser la réversibilité",
+      "source": "case"
+    },
+    {
+      "name": "Direction générale / finance",
+      "role": "Arbitre le budget et attend une baisse des coûts",
+      "source": "assumption"
+    },
+    {
+      "name": "Métiers propriétaires des applications",
+      "role": "Valident les choix application par application",
+      "source": "assumption"
+    }
+  ],
+  "facts": [
+    {
+      "id": "F1",
+      "text": "5 sites de production en France",
+      "evidence": "exploite 5 sites de production en France"
+    },
+    {
+      "id": "F2",
+      "text": "Environ 120 applications, dont une partie en legacy",
+      "evidence": "environ 120 applications, dont une partie en legacy"
+    },
+    {
+      "id": "F3",
+      "text": "Contrat d'infogérance du datacenter à échéance dans 18 mois",
+      "evidence": "le contrat d'infogérance arrive à échéance dans 18 mois"
+    },
+    {
+      "id": "F4",
+      "text": "Coûts d'infrastructure élevés",
+      "evidence": "Les coûts d'infrastructure sont élevés"
+    },
+    {
+      "id": "F5",
+      "text": "Déploiements lents (plusieurs semaines)",
+      "evidence": "chaque déploiement prend plusieurs semaines"
+    },
+    {
+      "id": "F6",
+      "text": "Versions du MES différentes selon les sites",
+      "evidence": "Les sites n'utilisent pas tous les mêmes versions des applications de production"
+    },
+    {
+      "id": "F7",
+      "text": "Certaines applications pilotent les lignes, sans interruption possible",
+      "evidence": "pilotent des lignes de production et ne tolèrent aucune interruption"
+    },
+    {
+      "id": "F8",
+      "text": "Le DSI veut tout migrer dans le cloud",
+      "evidence": "Le DSI souhaite « tout migrer dans le cloud »"
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "A1",
+      "text": "Aucun inventaire à jour des 120 applications et de leurs dépendances",
+      "basis": "Legacy ancien, infogérance externalisée"
+    },
+    {
+      "id": "A2",
+      "text": "Le MES et le pilotage des lignes dépendent d'équipements sur site (automates, réseau usine)",
+      "basis": "Usage industriel classique en agroalimentaire"
+    },
+    {
+      "id": "A3",
+      "text": "La lenteur des déploiements vient autant des processus que de l'infrastructure",
+      "basis": "Déploiements manuels fréquents sur du legacy"
+    },
+    {
+      "id": "A4",
+      "text": "Le contrat d'infogérance peut être prolongé partiellement ou renégocié",
+      "basis": "Pratique courante, à vérifier auprès des achats"
+    },
+    {
+      "id": "A5",
+      "text": "Aucun business case chiffré n'existe pour le cloud",
+      "basis": "Formulation « tout migrer » sans objectif chiffré"
+    }
+  ],
+  "premiseChallenge": "« Tout migrer dans le cloud » est un moyen, pas l'objectif : l'enjeu est de réduire les coûts, d'accélérer les déploiements et de sortir du datacenter à temps sans arrêter la production, ce qui se décide application par application."
+}
