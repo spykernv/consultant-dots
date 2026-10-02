@@ -62,6 +62,15 @@ Building it changed how I see the job. Once a model drafts a sound analysis in t
 
 So the app does both: it produces the analysis, and it lets you rehearse the conversation it cannot have for you.
 
+## In the field
+
+I'm Jonathan, a tech consultant. I will test Consultant Dots directly with B2B clients during my consulting missions in large corporate groups, on real business cases:
+- before a first client meeting, to frame the case and prepare the clarifying questions;
+- after the meeting, to compare the analysis with what the client actually said and decided;
+- with the interview mode, to rehearse a demanding meeting before having it for real.
+
+What I will look for: whether the questions the app proposes are the ones that changed the answer in the room, whether its analysis holds once the client's real constraints are known, and where a consultant still has to step in. What holds up and what fails will become new eval cases. These field tests follow the [Privacy](#privacy) rules: each case is anonymized first (no client name, no confidential figures, no personal data), within each client's own data rules.
+
 ## What it does
 
 | Step | What you get |
@@ -403,7 +412,7 @@ evals/               labelled answers for the challenge eval; results/ holds the
 
 ## Privacy
 
-The app runs locally: a Next.js server on 127.0.0.1, with no database and no hosted backend. Cases are saved under `cases/`, and deleted ones move to `cases/_corbeille/`; git ignores both. The case text and the analysis are sent to the model through your Claude login, so do not paste confidential, personal or client information. This is a personal tool; it is not meant to be exposed as a shared service.
+The app runs locally: a Next.js server on 127.0.0.1, with no database and no hosted backend. Cases are saved under `cases/`, and deleted ones move to `cases/_corbeille/`; git ignores both. The case text and the analysis are sent to the model through your Claude login, so do not paste confidential, personal or client information. Field tests with clients use anonymized cases only. This is a personal tool; it is not meant to be exposed as a shared service.
 
 ## License
 
