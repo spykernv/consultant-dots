@@ -27,7 +27,7 @@ A *client interview* mode puts you in front of a simulated client first. You hav
 - **The model describes, the code renders.** Diagrams are typed graphs compiled to Mermaid, and the value × feasibility ranking is computed, not generated. ([to-mermaid.ts](src/lib/diagram/to-mermaid.ts), [priority.ts](src/lib/diagram/priority.ts))
 - **Agentic only where the path stops being deterministic.** The analysis is a fixed graph. The client conversation is an agent loop with its own tools, because its next step depends on what the candidate says. The code keeps the rules there too: a round limit, what the client may reveal and how much per turn, which quotes are real, when the interview ends. ([Client interview mode](#client-interview-mode))
 - **Two engines, one contract.** By default every stage runs on the Claude Code CLI with your existing Claude login, so a subscriber pays nothing extra. An optional Claude API engine (official TypeScript SDK, structured outputs, prompt caching) runs the same prompts per token. ([claude-code.ts](src/lib/engine/claude-code.ts), [claude-api.ts](src/lib/engine/claude-api.ts))
-- **Measured, not asserted.** An eval harness runs the sample cases end to end through the app's own state machine. It scores the guardrails, and scores the interviewer critique against labelled answers next to an answer-blind baseline. ([Evaluation](#evaluation))
+- **Measured, not asserted.** An eval harness runs the sample cases end to end through the app's own state machine. It scores the guardrails, and scores the interviewer critique against labelled answers next to an answer-blind baseline. A second suite runs simulated candidates against the interviewer agent and measures the score separation, the live notes, leaks and invented figures. ([Evaluation](#evaluation))
 - **Runs without an account.** A replay engine streams recorded real runs, so the demo and CI need no login and no API key. ([mock.ts](src/lib/engine/mock.ts))
 
 **Try the demo without any account:** `npm install && npm run dev`, open http://127.0.0.1:3000 and click **« Démo sans IA »**.
@@ -276,6 +276,40 @@ Full report: [evals/results/20261001-1800-cli.md](evals/results/20261001-1800-cl
 - Three cases and three pipeline runs are too few for tight confidence intervals.
 - The self-critique figure in the report (the critic applied to the app's own pitch) is unlabelled and measures self-consistency only.
 
+### The interviewer, measured with simulated candidates
+
+`npm run eval -- --suite interview` measures the client interview itself. A simulated candidate, a model role with its own prompt, plays one of two personas per case. Each persona follows one of the two labelled answers above. The flawed one leads with its solution, defends it, and stays vague on what its answer leaves out. The control one asks its questions first, then diagnoses, compares options and recommends. It talks to the real interviewer (tool mode) for up to 8 messages; then the real debrief and the real score run, exactly as in the app ([candidate.ts](src/lib/eval/candidate.ts), [run-interview.ts](src/lib/eval/run-interview.ts), [interview-metrics.ts](src/lib/eval/interview-metrics.ts)). The fact sheets come from the pipeline runs of the first eval, so no pipeline call was needed. Each figure sits next to the answer-blind baseline scored on the same answers.
+
+First run (Claude Code engine, Claude Opus 5.5, 3 cases × 2 personas × 1 interview, 97 model calls on a subscription):
+
+| | Flawed persona | Control persona |
+|---|---|---|
+| Score (mean, min–max) | 5.3 (0–16) | 74.3 (69–77) |
+| Debrief level | à retravailler × 3 | solide × 3 |
+| Key questions answered by the client | 13 % (2/15) | 73 % (11/15) |
+| **Client's live notes**: precision / recall | 95 % (21/22) / 95 % (21/22) | 0.7 per interview, all false positives |
+| Debrief: precision / recall | 89 % (16/18) / 73 % (16/22) | 4.0 false positives per interview |
+| Answer-blind baseline on the same answers | 94 % (17/18) / 77 % (17/22) | 6.0 false positives per interview |
+
+| Guardrail | Result |
+|---|---|
+| Interviewer replies using a word of the recommended option or the pilot before the candidate | 0/45 |
+| Figures in a reply found neither in the case, the fact sheet nor the candidate's messages | 1/45 |
+| Tool calls refused by the code, invalid outputs | 0, 0 |
+
+Interviewer reply p50 6.8 s, candidate message p50 5.8 s, debrief p50 26 s, about 2 minutes and $0.65 (API-equivalent, not billed on a subscription) per interview. Full report: [evals/results/20261002-153814-cli-interview.md](evals/results/20261002-153814-cli-interview.md); transcripts: [interviews-2026-10-02-cli.json](evals/results/interviews-2026-10-02-cli.json).
+
+**What it taught me**
+- **The score separates the two personas by 69 points**, and the control interview scored higher on every case. Coverage contributes: the flawed persona asks almost nothing, so the client reveals almost nothing.
+- **The client's live notes are the strongest signal in the app.** On the flawed persona they find 95 % of the labelled weaknesses against 77 % for the fixed list, at the same precision. On the strong persona they raise 0.7 notes per interview where the fixed list raises 6. My reading: each note is taken on one message, with a quote the code verifies, while the debrief reads eight messages at once. Both the notes and the debrief catch E5 ("ignoring adoption") on all three flawed interviews, which the written-answer critique missed 9 times out of 9: the conversation itself brings it out, when the client asks and the answer stays vague.
+- **The debrief written afterwards does not beat the fixed list on weak candidates.** It wins only on strong ones, with fewer false positives. A first version of this report pooled the baseline over both personas and made the debrief look better than it is; the adversarial review caught it. The fix the numbers point to: feed the client's verified notes into the debrief.
+- **No leak in 45 replies, and one figure the code could not source.** With the answers hidden behind a tool, the client gave what it looked up.
+
+**Limits, stated plainly.**
+- The labels were written for the two answers, not for the conversations the personas produce. A persona can drift from its plan when the client asks something its answer never covered, so the raw transcripts are committed to check each number.
+- Candidate, interviewer, debrief and annotators are the same model family: a consistency check, not an independent benchmark. Six interviews give no confidence interval.
+- The leak check is a word heuristic (the terms are printed in the report): a paraphrase of the solution would go unseen.
+
 ### Tests and CI
 - **About 210 Vitest tests**, some parametrized over every stage and every recorded output. They include the eval harness, run on recorded outputs, and the API engine, run against a fake client.
 - Contract tests: every recorded output still parses against today's schemas, and every recorded diagram passes Mermaid's own parser.
@@ -335,6 +369,7 @@ The reasoning effort per stage is set in `src/lib/engine/config.ts`.
 | `npm test` | Test suite |
 | `npm run typecheck` / `npm run lint` | TypeScript and ESLint |
 | `npm run eval` | Live eval on the sample cases: `--engine cli\|api\|mock` (default `cli`), `--runs N`, `--cases id,id`, `--challenge-runs N` (default 3), `--no-self-critique`, `--reuse <raw file>` to re-score earlier pipeline runs, `--out dir` |
+| `npm run eval -- --suite interview` | Interview eval with simulated candidates: `--interviews N` per case and persona (default 1), `--personas flawed,control`, `--interview-tools on\|off`, `--reuse <raw file>` to take the fact sheets from earlier pipeline runs; `--engine mock` replays recorded turns with no account |
 
 ## Project structure
 
@@ -361,7 +396,8 @@ evals/               labelled answers for the challenge eval; results/ holds the
 - Whiteboard view (current state | problems | target | roadmap) with PNG export
 - The next eval iteration: hand-reviewed labels, harder cases, and a critic prompt tuned against the current numbers
 - Training mode with scoring over several cases
-- Client interview, V3: an evaluation with simulated candidates, run with the flawed and control answers that are already labelled. It would measure planted errors caught during the conversation, leaks of the solution, consistency of the client's answers with the fact sheet, and the cost per interview.
+- Interview debrief: feed the client's verified live notes into the debrief, then re-run the interview eval against the same baseline
+- Interview eval: more interviews per persona for confidence intervals, a tool-mode vs structured-mode comparison (`--interview-tools off`), and personas that drift on purpose (a strong start, then a solution pushed without evidence)
 - Client interview: scripted demos for the other two sample cases, and the transcript and debrief in the exports
 - English UI
 

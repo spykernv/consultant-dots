@@ -1,0 +1,732 @@
+{
+  "promptVersion": "211d0391",
+  "engine": "cli",
+  "tools": true,
+  "pipelinesFrom": "runs-2026-10-01-cli.json",
+  "freshPipelines": [],
+  "reusedWithoutOptions": [],
+  "skipped": [],
+  "summary": {
+    "interviews": 6,
+    "byPersona": {
+      "flawed": {
+        "interviews": 3,
+        "completed": {
+          "value": 1,
+          "num": 3,
+          "den": 3
+        },
+        "endedBy": {
+          "client": 0,
+          "max_rounds": 3,
+          "error": 0
+        },
+        "meanRounds": 8,
+        "coverage": {
+          "value": 0.13333333333333333,
+          "num": 2,
+          "den": 15
+        },
+        "debrief": {
+          "interviews": 3,
+          "precision": {
+            "value": 0.8888888888888888,
+            "num": 16,
+            "den": 18
+          },
+          "highSeverityPrecision": {
+            "value": 0.8,
+            "num": 8,
+            "den": 10
+          },
+          "recall": {
+            "value": 0.7272727272727273,
+            "num": 16,
+            "den": 22
+          },
+          "recallCeiling": 0.8181818181818182,
+          "falsePositives": {
+            "value": 0.6666666666666666,
+            "num": 2,
+            "den": 3
+          },
+          "levels": {
+            "a_retravailler": 3
+          },
+          "baseline": {
+            "precision": {
+              "value": 0.9444444444444444,
+              "num": 17,
+              "den": 18
+            },
+            "recall": {
+              "value": 0.7727272727272727,
+              "num": 17,
+              "den": 22
+            },
+            "falsePositives": {
+              "value": 0.3333333333333333,
+              "num": 1,
+              "den": 3
+            }
+          }
+        },
+        "observations": {
+          "interviews": 3,
+          "precision": {
+            "value": 0.9545454545454546,
+            "num": 21,
+            "den": 22
+          },
+          "recall": {
+            "value": 0.9545454545454546,
+            "num": 21,
+            "den": 22
+          },
+          "perInterview": {
+            "value": 7.333333333333333,
+            "num": 22,
+            "den": 3
+          },
+          "baseline": {
+            "precision": {
+              "value": 0.9444444444444444,
+              "num": 17,
+              "den": 18
+            },
+            "recall": {
+              "value": 0.7727272727272727,
+              "num": 17,
+              "den": 22
+            }
+          }
+        },
+        "candidateLength": {
+          "messages": 24,
+          "overCap": {
+            "value": 0,
+            "num": 0,
+            "den": 24
+          },
+          "retried": 0,
+          "truncated": 0,
+          "truncatedRounds": []
+        },
+        "score": {
+          "n": 3,
+          "mean": 5.333333333333333,
+          "sd": 9.237604307034013,
+          "min": 0,
+          "max": 16
+        },
+        "leaks": {
+          "value": 0,
+          "num": 0,
+          "den": 24
+        },
+        "factSheet": {
+          "replies": 24,
+          "unsourcedNumbers": 0,
+          "repliesWithUnsourcedNumbers": {
+            "value": 0,
+            "num": 0,
+            "den": 24
+          },
+          "unknownAnswerIds": 0,
+          "toolErrors": 0,
+          "invalidOutputs": {
+            "value": 0,
+            "num": 0,
+            "den": 24
+          },
+          "emailsMasked": 0
+        },
+        "tools": {
+          "replies": 24,
+          "callsPerReply": {
+            "value": 1,
+            "num": 24,
+            "den": 24
+          },
+          "roundsPerReply": {
+            "value": 0.8333333333333334,
+            "num": 20,
+            "den": 24
+          },
+          "observationsRecorded": 22,
+          "observationsRejected": 0
+        }
+      },
+      "control": {
+        "interviews": 3,
+        "completed": {
+          "value": 1,
+          "num": 3,
+          "den": 3
+        },
+        "endedBy": {
+          "client": 2,
+          "max_rounds": 1,
+          "error": 0
+        },
+        "meanRounds": 7,
+        "coverage": {
+          "value": 0.7333333333333333,
+          "num": 11,
+          "den": 15
+        },
+        "debrief": {
+          "interviews": 3,
+          "precision": {
+            "value": 0,
+            "num": 0,
+            "den": 12
+          },
+          "highSeverityPrecision": {
+            "value": null,
+            "num": 0,
+            "den": 0
+          },
+          "recall": {
+            "value": null,
+            "num": 0,
+            "den": 0
+          },
+          "recallCeiling": null,
+          "falsePositives": {
+            "value": 4,
+            "num": 12,
+            "den": 3
+          },
+          "levels": {
+            "solide": 3
+          },
+          "baseline": {
+            "precision": {
+              "value": 0,
+              "num": 0,
+              "den": 18
+            },
+            "recall": {
+              "value": null,
+              "num": 0,
+              "den": 0
+            },
+            "falsePositives": {
+              "value": 6,
+              "num": 18,
+              "den": 3
+            }
+          }
+        },
+        "observations": {
+          "interviews": 3,
+          "precision": {
+            "value": 0,
+            "num": 0,
+            "den": 2
+          },
+          "recall": {
+            "value": null,
+            "num": 0,
+            "den": 0
+          },
+          "perInterview": {
+            "value": 0.6666666666666666,
+            "num": 2,
+            "den": 3
+          },
+          "baseline": {
+            "precision": {
+              "value": 0,
+              "num": 0,
+              "den": 18
+            },
+            "recall": {
+              "value": null,
+              "num": 0,
+              "den": 0
+            }
+          }
+        },
+        "candidateLength": {
+          "messages": 21,
+          "overCap": {
+            "value": 0.047619047619047616,
+            "num": 1,
+            "den": 21
+          },
+          "retried": 1,
+          "truncated": 0,
+          "truncatedRounds": []
+        },
+        "score": {
+          "n": 3,
+          "mean": 74.33333333333333,
+          "sd": 4.618802153517006,
+          "min": 69,
+          "max": 77
+        },
+        "leaks": {
+          "value": 0,
+          "num": 0,
+          "den": 21
+        },
+        "factSheet": {
+          "replies": 21,
+          "unsourcedNumbers": 1,
+          "repliesWithUnsourcedNumbers": {
+            "value": 0.047619047619047616,
+            "num": 1,
+            "den": 21
+          },
+          "unknownAnswerIds": 0,
+          "toolErrors": 0,
+          "invalidOutputs": {
+            "value": 0,
+            "num": 0,
+            "den": 21
+          },
+          "emailsMasked": 0
+        },
+        "tools": {
+          "replies": 21,
+          "callsPerReply": {
+            "value": 0.6190476190476191,
+            "num": 13,
+            "den": 21
+          },
+          "roundsPerReply": {
+            "value": 0.42857142857142855,
+            "num": 9,
+            "den": 21
+          },
+          "observationsRecorded": 2,
+          "observationsRejected": 0
+        }
+      }
+    },
+    "overall": {
+      "interviews": 6,
+      "completed": {
+        "value": 1,
+        "num": 6,
+        "den": 6
+      },
+      "endedBy": {
+        "client": 2,
+        "max_rounds": 4,
+        "error": 0
+      },
+      "meanRounds": 7.5,
+      "coverage": {
+        "value": 0.43333333333333335,
+        "num": 13,
+        "den": 30
+      },
+      "debrief": {
+        "interviews": 6,
+        "precision": {
+          "value": 0.5333333333333333,
+          "num": 16,
+          "den": 30
+        },
+        "highSeverityPrecision": {
+          "value": 0.8,
+          "num": 8,
+          "den": 10
+        },
+        "recall": {
+          "value": 0.7272727272727273,
+          "num": 16,
+          "den": 22
+        },
+        "recallCeiling": 0.8181818181818182,
+        "falsePositives": {
+          "value": 2.3333333333333335,
+          "num": 14,
+          "den": 6
+        },
+        "levels": {
+          "a_retravailler": 3,
+          "solide": 3
+        },
+        "baseline": {
+          "precision": {
+            "value": 0.4722222222222222,
+            "num": 17,
+            "den": 36
+          },
+          "recall": {
+            "value": 0.7727272727272727,
+            "num": 17,
+            "den": 22
+          },
+          "falsePositives": {
+            "value": 3.1666666666666665,
+            "num": 19,
+            "den": 6
+          }
+        }
+      },
+      "observations": {
+        "interviews": 6,
+        "precision": {
+          "value": 0.875,
+          "num": 21,
+          "den": 24
+        },
+        "recall": {
+          "value": 0.9545454545454546,
+          "num": 21,
+          "den": 22
+        },
+        "perInterview": {
+          "value": 4,
+          "num": 24,
+          "den": 6
+        },
+        "baseline": {
+          "precision": {
+            "value": 0.4722222222222222,
+            "num": 17,
+            "den": 36
+          },
+          "recall": {
+            "value": 0.7727272727272727,
+            "num": 17,
+            "den": 22
+          }
+        }
+      },
+      "candidateLength": {
+        "messages": 45,
+        "overCap": {
+          "value": 0.022222222222222223,
+          "num": 1,
+          "den": 45
+        },
+        "retried": 1,
+        "truncated": 0,
+        "truncatedRounds": []
+      },
+      "score": {
+        "n": 6,
+        "mean": 39.833333333333336,
+        "sd": 38.35318326640784,
+        "min": 0,
+        "max": 77
+      },
+      "leaks": {
+        "value": 0,
+        "num": 0,
+        "den": 45
+      },
+      "factSheet": {
+        "replies": 45,
+        "unsourcedNumbers": 1,
+        "repliesWithUnsourcedNumbers": {
+          "value": 0.022222222222222223,
+          "num": 1,
+          "den": 45
+        },
+        "unknownAnswerIds": 0,
+        "toolErrors": 0,
+        "invalidOutputs": {
+          "value": 0,
+          "num": 0,
+          "den": 45
+        },
+        "emailsMasked": 0
+      },
+      "tools": {
+        "replies": 45,
+        "callsPerReply": {
+          "value": 0.8222222222222222,
+          "num": 37,
+          "den": 45
+        },
+        "roundsPerReply": {
+          "value": 0.6444444444444445,
+          "num": 29,
+          "den": 45
+        },
+        "observationsRecorded": 24,
+        "observationsRejected": 0
+      }
+    },
+    "baselineFlags": [
+      "E1",
+      "E3",
+      "E4",
+      "E5",
+      "E6",
+      "E2"
+    ],
+    "separation": 69,
+    "ordering": {
+      "value": 1,
+      "num": 3,
+      "den": 3
+    },
+    "leakedTerms": {},
+    "uncheckedCases": [],
+    "latencyMs": {
+      "candidate": {
+        "p50": 5842,
+        "p90": 8356
+      },
+      "interviewer": {
+        "p50": 6803,
+        "p90": 8786
+      },
+      "debrief": {
+        "p50": 26274,
+        "p90": 36983
+      }
+    },
+    "wallMs": {
+      "p50": 124686,
+      "max": 141747
+    },
+    "costUsdPerInterview": 0.6512467666666667,
+    "costCoverage": {
+      "value": 1,
+      "num": 6,
+      "den": 6
+    },
+    "servedModels": [
+      "claude-opus-5-5"
+    ],
+    "errors": {},
+    "perCase": {
+      "data-platform": {
+        "flawed": {
+          "samples": [
+            1
+          ],
+          "endedBy": [
+            "max_rounds"
+          ],
+          "scores": [
+            0
+          ],
+          "levels": [
+            "a_retravailler"
+          ],
+          "flagged": [
+            [
+              "E1",
+              "E4",
+              "E5",
+              "E6",
+              "E7",
+              "E8"
+            ]
+          ],
+          "observed": [
+            [
+              "E1",
+              "E2",
+              "E3",
+              "E4",
+              "E5",
+              "E6",
+              "E8",
+              "E9"
+            ]
+          ],
+          "coverage": [
+            0
+          ],
+          "leaks": [
+            0
+          ]
+        },
+        "control": {
+          "samples": [
+            1
+          ],
+          "endedBy": [
+            "client"
+          ],
+          "scores": [
+            69
+          ],
+          "levels": [
+            "solide"
+          ],
+          "flagged": [
+            [
+              "E1",
+              "E3",
+              "E4",
+              "E6"
+            ]
+          ],
+          "observed": [
+            []
+          ],
+          "coverage": [
+            0.6
+          ],
+          "leaks": [
+            0
+          ]
+        }
+      },
+      "genai-assurance": {
+        "flawed": {
+          "samples": [
+            1
+          ],
+          "endedBy": [
+            "max_rounds"
+          ],
+          "scores": [
+            0
+          ],
+          "levels": [
+            "a_retravailler"
+          ],
+          "flagged": [
+            [
+              "E1",
+              "E2",
+              "E4",
+              "E5",
+              "E6",
+              "E9"
+            ]
+          ],
+          "observed": [
+            [
+              "E1",
+              "E2",
+              "E3",
+              "E4",
+              "E5",
+              "E6",
+              "E9"
+            ]
+          ],
+          "coverage": [
+            0
+          ],
+          "leaks": [
+            0
+          ]
+        },
+        "control": {
+          "samples": [
+            1
+          ],
+          "endedBy": [
+            "max_rounds"
+          ],
+          "scores": [
+            77
+          ],
+          "levels": [
+            "solide"
+          ],
+          "flagged": [
+            [
+              "E6",
+              "E7",
+              "E9"
+            ]
+          ],
+          "observed": [
+            [
+              "E5"
+            ]
+          ],
+          "coverage": [
+            0.8
+          ],
+          "leaks": [
+            0
+          ]
+        }
+      },
+      "cloud-industriel": {
+        "flawed": {
+          "samples": [
+            1
+          ],
+          "endedBy": [
+            "max_rounds"
+          ],
+          "scores": [
+            16
+          ],
+          "levels": [
+            "a_retravailler"
+          ],
+          "flagged": [
+            [
+              "E1",
+              "E4",
+              "E5",
+              "E6",
+              "E7",
+              "E10"
+            ]
+          ],
+          "observed": [
+            [
+              "E1",
+              "E2",
+              "E4",
+              "E5",
+              "E6",
+              "E7",
+              "E10"
+            ]
+          ],
+          "coverage": [
+            0.4
+          ],
+          "leaks": [
+            0
+          ]
+        },
+        "control": {
+          "samples": [
+            1
+          ],
+          "endedBy": [
+            "client"
+          ],
+          "scores": [
+            77
+          ],
+          "levels": [
+            "solide"
+          ],
+          "flagged": [
+            [
+              "E2",
+              "E3",
+              "E4",
+              "E7",
+              "E10"
+            ]
+          ],
+          "observed": [
+            [
+              "E6"
+            ]
+          ],
+          "coverage": [
+            0.8
+          ],
+          "leaks": [
+            0
+          ]
+        }
+      }
+    }
+  }
+}
