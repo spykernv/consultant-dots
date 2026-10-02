@@ -2,12 +2,13 @@ import ClaudeApi from "@anthropic-ai/sdk";
 import type { TokenUsage } from "@/lib/schemas/api";
 import type { JsonSchema } from "@/lib/schemas/strict-schema";
 import { engineEnv } from "./config";
-import { EngineError, type EngineRequest, type EngineResult } from "./types";
+import { EngineError, TOOL_LIMIT_TEXT, type EngineRequest, type EngineResult, type EngineToolResult, type EngineToolSet } from "./types";
 
 /**
  * Optional engine: the Claude API with a key, billed per token. The default engine stays the Claude Code CLI,
  * which runs on the user's existing Claude login at no extra cost. Same contract as the CLI: same system prompt,
- * same strict JSON Schema, same NDJSON events.
+ * same strict JSON Schema, same NDJSON events. When the request carries tools, a manual loop runs their calls in
+ * process (runToolLoop).
  */
 
 const MAX_TOKENS = 32_000;
@@ -127,30 +128,65 @@ const toUsage = (u: UsageLike): TokenUsage => ({
   cacheWrite: u.cache_creation_input_tokens ?? 0,
 });
 
+const NO_USAGE: TokenUsage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+
+const addUsage = (a: TokenUsage, b: TokenUsage): TokenUsage => ({
+  input: a.input + b.input,
+  output: a.output + b.output,
+  cacheRead: a.cacheRead + b.cacheRead,
+  cacheWrite: a.cacheWrite + b.cacheWrite,
+});
+
+type Billed = { usage: TokenUsage; costUsd: number | null };
+
+/** What one run has spent and done so far, kept across the fallback-model rerun. */
+type RunState = { billed: Billed[]; toolCalls: number };
+
+/** One unknown price makes the whole cost unknown rather than understated. */
+function sumBilled(parts: Billed[]): Billed {
+  const usage = parts.reduce<TokenUsage>((t, p) => addUsage(t, p.usage), NO_USAGE);
+  return { usage, costUsd: parts.every((p) => p.costUsd != null) ? parts.reduce<number>((n, p) => n + (p.costUsd as number), 0) : null };
+}
+
 /**
  * When the server-side fallback served the turn, `usage.iterations` lists every billed attempt with its own model;
  * the top-level usage covers only the attempt that answered.
  */
-function usageAndCost(message: { model: string; usage: UsageLike & { iterations?: unknown } }, requested: string) {
+function usageAndCost(message: { model: string; usage: UsageLike & { iterations?: unknown } }, requested: string): Billed {
   const iterations = (Array.isArray(message.usage.iterations) ? message.usage.iterations : []) as (UsageLike & { type: string; model?: string | null })[];
   const billed = iterations.filter((i) => i.type === "message" || i.type === "fallback_message");
   if (!billed.length) {
     const usage = toUsage(message.usage);
     return { usage, costUsd: costOf(message.model, usage) };
   }
-  const parts = billed.map((i) => ({ usage: toUsage(i), model: i.model ?? requested }));
-  const usage = parts.reduce<TokenUsage>(
-    (t, p) => ({ input: t.input + p.usage.input, output: t.output + p.usage.output, cacheRead: t.cacheRead + p.usage.cacheRead, cacheWrite: t.cacheWrite + p.usage.cacheWrite }),
-    { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+  return sumBilled(
+    billed.map((i) => {
+      const usage = toUsage(i);
+      return { usage, costUsd: costOf(i.model ?? requested, usage) };
+    }),
   );
-  const costs = parts.map((p) => costOf(p.model, p.usage));
-  return { usage, costUsd: costs.every((c) => c != null) ? costs.reduce<number>((n, c) => n + (c as number), 0) : null };
 }
 
-async function streamOnce(client: ApiClient, model: string, req: EngineRequest, signal: AbortSignal): Promise<EngineResult> {
-  const parts = splitCasePrefix(req.userMessage);
+type MessageParam = ClaudeApi.Beta.BetaMessageParam;
+type FinalMessage = ClaudeApi.Beta.BetaMessage;
+type ToolUseBlock = ClaudeApi.Beta.BetaToolUseBlock;
+/** Tool runs only: the tool list and the tool_choice of one request. */
+type Tooling = { tools: ClaudeApi.Beta.BetaToolUnion[]; tool_choice: ClaudeApi.Beta.BetaToolChoice };
+
+/** The case prefix, when the message opens with one, is its own cached block. */
+function firstMessage(userMessage: string): MessageParam {
+  const parts = splitCasePrefix(userMessage);
+  return {
+    role: "user",
+    content: parts.map((text, i) =>
+      i === 0 && parts.length > 1 ? { type: "text" as const, text, cache_control: { type: "ephemeral" as const } } : { type: "text" as const, text },
+    ),
+  };
+}
+
+function openStream(client: ApiClient, model: string, req: EngineRequest, messages: MessageParam[], signal: AbortSignal, tooling?: Tooling) {
   // Thinking is left to the model's default (adaptive on the current models); effort sets its depth.
-  const stream = client.beta.messages.stream(
+  return client.beta.messages.stream(
     {
       model,
       max_tokens: MAX_TOKENS,
@@ -161,49 +197,207 @@ async function streamOnce(client: ApiClient, model: string, req: EngineRequest, 
         format: { type: "json_schema", schema: forStructuredOutput(req.jsonSchema) as Record<string, unknown> },
       },
       system: [{ type: "text", text: req.systemPrompt, cache_control: { type: "ephemeral" } }],
-      messages: [
-        {
-          role: "user",
-          content: parts.map((text, i) =>
-            i === 0 && parts.length > 1 ? { type: "text" as const, text, cache_control: { type: "ephemeral" as const } } : { type: "text" as const, text },
-          ),
-        },
-      ],
+      messages,
+      ...tooling,
     },
     { signal },
   );
+}
 
+/**
+ * Relays the progress of one message. Live, its text deltas go straight to the client's JSON buffer; held (tool runs),
+ * they wait until the message turns out to be the final answer, since a tool round's text is not that JSON.
+ */
+async function relayStream(stream: ReturnType<typeof openStream>, req: EngineRequest, live: boolean): Promise<string[]> {
+  const held: string[] = [];
   // A server-side fallback continues the same JSON in a new text block: only the first one restarts the client buffer.
   let writing = false;
   for await (const event of stream) {
     if (event.type === "content_block_start") {
       if (event.content_block.type === "thinking" || event.content_block.type === "redacted_thinking") {
         if (!writing) req.emit({ type: "status", phase: "thinking" });
-      } else if (event.content_block.type === "text" && !writing) {
+      } else if (event.content_block.type === "text" && !writing && live) {
         writing = true;
         req.emit({ type: "status", phase: "writing" });
       }
     } else if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-      req.emit({ type: "delta", text: event.delta.text });
+      if (live) req.emit({ type: "delta", text: event.delta.text });
+      else held.push(event.delta.text);
     }
   }
+  return held;
+}
 
-  const message = await stream.finalMessage();
+/** Refusal and truncation end the run whatever the message holds: the tools it asked for never run. */
+function checkStop(message: FinalMessage) {
   if (message.stop_reason === "refusal") {
     throw new EngineError("engine_error", "Claude a refusé de traiter cette étape. Reformule le case ou réessaie.");
   }
   if (message.stop_reason === "max_tokens") {
     throw new EngineError("invalid_output", "Sortie tronquée : la limite de tokens a été atteinte.");
   }
+}
+
+function parseOutput(message: FinalMessage): unknown {
   const text = message.content.map((block) => (block.type === "text" ? block.text : "")).join("");
-  let output: unknown;
   try {
-    output = JSON.parse(text);
+    return JSON.parse(text);
   } catch {
     throw new EngineError("invalid_output", "L'API n'a pas renvoyé de JSON valide.");
   }
+}
+
+async function streamOnce(client: ApiClient, model: string, req: EngineRequest, signal: AbortSignal): Promise<EngineResult> {
+  const stream = openStream(client, model, req, [firstMessage(req.userMessage)], signal);
+  await relayStream(stream, req, true);
+  const message = await stream.finalMessage();
+  checkStop(message);
+  const output = parseOutput(message);
   const { usage, costUsd } = usageAndCost(message as never, model);
   return { output, model: message.model, costUsd, rateLimit: null, usage };
+}
+
+/**
+ * Eager input streaming skips the server's validation of the tool input JSON, so the SDK rejects the stream when a
+ * streamed input does not parse. That error comes from the SDK itself, with no HTTP status.
+ */
+const TOOL_INPUT_UNPARSABLE = /Unable to parse tool parameter JSON/i;
+/** Re-issues of one request after an unparsable tool input, before the run fails. */
+const TOOL_INPUT_RETRIES = 2;
+
+const isToolInputParseError = (err: unknown) => err instanceof Error && statusOf(err) === undefined && TOOL_INPUT_UNPARSABLE.test(err.message);
+
+async function streamToolRound(
+  client: ApiClient,
+  model: string,
+  req: EngineRequest,
+  messages: MessageParam[],
+  tooling: Tooling,
+  signal: AbortSignal,
+  state: RunState,
+) {
+  for (let retry = 0; ; retry++) {
+    // Tools ran since the last request: an abort or a timeout in the meantime ends the run here.
+    signal.throwIfAborted();
+    const stream = openStream(client, model, req, [...messages], signal, tooling);
+    try {
+      const held = await relayStream(stream, req, false);
+      return { message: await stream.finalMessage(), held };
+    } catch (err) {
+      if (!isToolInputParseError(err)) throw err;
+      // The abandoned request is billed too. Its snapshot holds the usage reported so far (the input, and the output
+      // counted at message_start): a lower bound, since the final count never arrives.
+      const partial = stream.currentMessage;
+      if (partial) state.billed.push(usageAndCost(partial as never, model));
+      stream.abort();
+      if (retry >= TOOL_INPUT_RETRIES) {
+        throw new EngineError("invalid_output", "L'API a renvoyé un appel d'outil illisible, même après deux nouvelles tentatives.");
+      }
+    }
+  }
+}
+
+async function runTool(toolSet: EngineToolSet, block: ToolUseBlock, state: RunState): Promise<EngineToolResult> {
+  // Counted before it runs: even a call that throws may have changed the tool session.
+  state.toolCalls++;
+  try {
+    return await toolSet.call(block.name, block.input, { callId: block.id });
+  } catch (err) {
+    // call() is not supposed to throw; if it does, the model learns that the call failed and the reply goes on.
+    return { text: `The tool failed: ${err instanceof Error ? err.message : String(err)}`, isError: true };
+  }
+}
+
+/** Where the content of the model that answered starts: after the last server-side fallback block, if any. */
+const answeringFrom = (content: FinalMessage["content"]) => content.findLastIndex((block) => block.type === "fallback") + 1;
+
+/**
+ * An assistant message as it goes back into the history. After a server-side fallback, the declined model's
+ * thinking, tool_use and other model-internal blocks are left out, as the API asks: only its text and its paired
+ * server-tool blocks echo. The fallback blocks are kept (the API ignores them), and the answering model's content
+ * echoes unchanged.
+ */
+function echoed(content: FinalMessage["content"]): FinalMessage["content"] {
+  const start = answeringFrom(content);
+  if (!start) return content;
+  const declined = content.slice(0, start);
+  const resultFor = new Set(declined.flatMap((block) => ("tool_use_id" in block ? [block.tool_use_id] : [])));
+  const paired = new Set(
+    declined.flatMap((block) => (block.type !== "tool_use" && "id" in block && resultFor.has(block.id) ? [block.id] : [])),
+  );
+  const kept = declined.filter(
+    (block) =>
+      block.type === "text" ||
+      block.type === "fallback" ||
+      ("id" in block && paired.has(block.id)) ||
+      ("tool_use_id" in block && paired.has(block.tool_use_id)),
+  );
+  return [...kept, ...content.slice(start)];
+}
+
+/**
+ * The manual tool loop: each message that stops on tool_use has its calls run in code and their results sent back,
+ * until a message gives the final JSON. The history is append-only: every assistant message goes back unchanged,
+ * thinking blocks included, which the API needs to keep the model's reasoning across the calls; only what a
+ * server-side fallback declined is left out (echoed).
+ */
+async function runToolLoop(
+  client: ApiClient,
+  model: string,
+  req: EngineRequest,
+  toolSet: EngineToolSet,
+  signal: AbortSignal,
+  state: RunState,
+): Promise<EngineResult> {
+  // Same list, same order on every request: the tools open the cached prefix, ahead of the system prompt.
+  const tools: ClaudeApi.Beta.BetaToolUnion[] = toolSet.tools.map((tool) => ({
+    name: tool.name,
+    description: tool.description,
+    input_schema: forStructuredOutput(tool.inputSchema) as ClaudeApi.Beta.BetaTool.InputSchema,
+    strict: true,
+    eager_input_streaming: true,
+  }));
+  const messages: MessageParam[] = [firstMessage(req.userMessage)];
+  /** Messages that called tools, refused rounds included, as the CLI engine counts them. */
+  let rounds = 0;
+
+  for (;;) {
+    // Once the rounds are spent, "none" makes the model answer: forcing a tool ("any", "tool") is rejected by the
+    // current models, and the tools must stay listed because the history holds tool_use blocks.
+    const tool_choice: ClaudeApi.Beta.BetaToolChoice = rounds < toolSet.maxIterations ? { type: "auto" } : { type: "none" };
+    const { message, held } = await streamToolRound(client, model, req, messages, { tools, tool_choice }, signal, state);
+    state.billed.push(usageAndCost(message as never, model));
+    checkStop(message);
+
+    // After a server-side fallback, only the answering model's calls run: the declined model's never do.
+    const calls = message.content
+      .slice(answeringFrom(message.content))
+      .filter((block): block is ToolUseBlock => block.type === "tool_use");
+    if (message.stop_reason !== "tool_use" || !calls.length) {
+      if (held.length) {
+        req.emit({ type: "status", phase: "writing" });
+        for (const text of held) req.emit({ type: "delta", text });
+      }
+      const output = parseOutput(message);
+      const { usage, costUsd } = sumBilled(state.billed);
+      return { output, model: message.model, costUsd, rateLimit: null, usage, toolIterations: rounds };
+    }
+    // One refused round is answered; calling tools again after it ends the run.
+    if (rounds > toolSet.maxIterations) {
+      throw new EngineError("invalid_output", "Claude a continué d'appeler des outils au lieu de répondre.");
+    }
+
+    messages.push({ role: "assistant", content: echoed(message.content) });
+    // "none" should rule out calls past the limit; if some come anyway, they are answered without running, once.
+    const withinLimit = rounds < toolSet.maxIterations;
+    const results: ClaudeApi.Beta.BetaToolResultBlockParam[] = [];
+    for (const call of calls) {
+      const result = withinLimit ? await runTool(toolSet, call, state) : { text: TOOL_LIMIT_TEXT, isError: true };
+      results.push({ type: "tool_result", tool_use_id: call.id, content: result.text, is_error: result.isError });
+    }
+    messages.push({ role: "user", content: results });
+    rounds++;
+  }
 }
 
 export async function runClaudeApi(req: EngineRequest, injected?: ApiClient): Promise<EngineResult> {
@@ -219,9 +413,13 @@ export async function runClaudeApi(req: EngineRequest, injected?: ApiClient): Pr
     controller.abort();
   }, req.timeoutMs);
 
+  // One state for both attempts: the requests of an abandoned attempt are billed with the rerun's.
+  const state: RunState = { billed: [], toolCalls: 0 };
   const attempt = async (model: string) => {
     try {
-      return await streamOnce(client, model, req, controller.signal);
+      return await (req.tools
+        ? runToolLoop(client, model, req, req.tools, controller.signal, state)
+        : streamOnce(client, model, req, controller.signal));
     } catch (err) {
       if (req.signal.aborted) throw new EngineError("aborted", "Étape arrêtée.");
       if (timedOut) throw new EngineError("timeout", `Délai dépassé (${Math.round(req.timeoutMs / 1000)} s).`);
@@ -234,7 +432,10 @@ export async function runClaudeApi(req: EngineRequest, injected?: ApiClient): Pr
       return await attempt(env.model);
     } catch (err) {
       // The SDK already retried the overload; one more try on the fallback model, as the CLI's --fallback-model does.
-      if (err instanceof EngineError && err.code === "overloaded" && env.fallbackModel && env.fallbackModel !== env.model) {
+      // Not once a tool ran: the tool session keeps that attempt's reveals, budget and trace, and a rerun would add
+      // to them. The overload goes back instead, and the client's Retry starts the turn with a fresh session.
+      const canRerun = err instanceof EngineError && err.code === "overloaded" && state.toolCalls === 0;
+      if (canRerun && env.fallbackModel && env.fallbackModel !== env.model) {
         return await attempt(env.fallbackModel);
       }
       throw err;

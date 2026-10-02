@@ -14,10 +14,11 @@ import { actions, pump } from "@/lib/store/orchestrator";
 import { useSession } from "@/lib/store/session-store";
 import {
   INTERVIEW_MAX_ROUNDS,
-  InterviewTurnOutputSchema,
+  InterviewTurnResultSchema,
   MAX_CANDIDATE_CHARS,
   type FactSheet,
   type InterviewMessage,
+  type InterviewObservation,
   type InterviewRequest,
   type InterviewState,
   type InterviewStatus,
@@ -56,6 +57,18 @@ const get = () => useSession.getState();
 
 const candidateTexts = (interview: InterviewState) =>
   interview.messages.filter((m) => m.role === "candidate").map((m) => m.text);
+
+/** Interviews saved before the client could take notes have no observations field. */
+const observationsOf = (interview: InterviewState) => interview.observations ?? [];
+
+/** One note per reflex for the whole interview: a turn's note on a reflex already noted is dropped. */
+function mergeObservations(previous: InterviewObservation[], added: InterviewObservation[]): InterviewObservation[] {
+  const merged = [...previous];
+  for (const observation of added) {
+    if (!merged.some((o) => o.reflex === observation.reflex)) merged.push(observation);
+  }
+  return merged;
+}
 
 function patchInterview(patch: Partial<InterviewState>) {
   useSession.setState((s) => (s.interview ? { interview: { ...s.interview, ...patch } } : s));
@@ -175,13 +188,16 @@ async function runTurn() {
       round,
       maxRounds: interview.maxRounds,
       revealed: interview.revealed,
+      // Tool mode: the server refuses a second note on these, so the debrief lists each weakness once.
+      notedReflexes: [...new Set(observationsOf(interview).map((o) => o.reflex))],
     },
   };
 
   const outcome = await exchange("/api/interview", request, "waiting");
   if (!outcome) return;
   if (outcome.type === "error") return patchInterview({ status: "error", error: TURN_FAILED + outcome.message });
-  const parsed = InterviewTurnOutputSchema.safeParse(outcome.data);
+  // Its defaults read a structured-mode turn too, which has neither observations nor tool calls.
+  const parsed = InterviewTurnResultSchema.safeParse(outcome.data);
   if (!parsed.success || !parsed.data.reply.trim()) {
     return patchInterview({ status: "error", error: "La réponse du client est illisible. Relance pour la redemander." });
   }
@@ -192,7 +208,13 @@ async function runTurn() {
   const reveal = [...new Set(turn.reveal.filter((id) => known.has(id)))];
   // The code ends the interview, the model only asks: at the last round it closes whatever the model said.
   const finished = turn.done || round >= interview.maxRounds;
-  const reply: InterviewMessage = { role: "interviewer", text: turn.reply.trim(), reveal, action: turn.action };
+  const reply: InterviewMessage = {
+    role: "interviewer",
+    text: turn.reply.trim(),
+    reveal,
+    action: turn.action,
+    ...(turn.toolCalls.length > 0 ? { tools: turn.toolCalls } : {}),
+  };
   useSession.setState((now) =>
     now.interview
       ? {
@@ -200,6 +222,7 @@ async function runTurn() {
             ...now.interview,
             messages: [...now.interview.messages, reply],
             revealed: [...now.interview.revealed, ...reveal.filter((id) => !now.interview!.revealed.includes(id))],
+            observations: mergeObservations(observationsOf(now.interview), turn.observations),
             notes: [...now.interview.notes, ...outcome.meta.notes],
             status: finished ? "debriefing" : "ready",
             error: null,
@@ -371,6 +394,7 @@ export const interviewActions = {
         messages: [],
         revealed: [],
         debrief: null,
+        observations: [],
         notes: [],
         error: null,
         closed: false,

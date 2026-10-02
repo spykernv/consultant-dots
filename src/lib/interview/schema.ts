@@ -1,5 +1,7 @@
 import { z } from "zod";
 import type { StageOutputs } from "@/lib/schemas";
+import { SEVERITIES } from "@/lib/schemas/challenge";
+import { ReflexIdSchema } from "@/lib/schemas/common";
 
 /**
  * Client interview mode: the candidate faces a simulated client for a limited number of rounds. The analysis
@@ -30,6 +32,46 @@ export const InterviewTurnOutputSchema = z.object({
 });
 export type InterviewTurnOutput = z.infer<typeof InterviewTurnOutputSchema>;
 
+/**
+ * Tool mode (the default): the client looks its answers up with tools, and the code derives "reveal" from the
+ * get_client_answer calls that succeeded. The model only returns what it says, its move and whether it closes.
+ */
+export const InterviewReplySchema = InterviewTurnOutputSchema.omit({ reveal: true });
+export type InterviewReply = z.infer<typeof InterviewReplySchema>;
+
+export const INTERVIEW_TOOL_NAMES = ["get_client_answer", "lookup_fact", "check_quote", "record_observation"] as const;
+export type InterviewToolName = (typeof INTERVIEW_TOOL_NAMES)[number];
+
+/** A weakness the client noted during the interview, its quote checked against the candidate's own messages. */
+export const InterviewObservationSchema = z.object({
+  reflex: ReflexIdSchema,
+  severity: z.enum(SEVERITIES),
+  /** The candidate's words, found verbatim (as caseContains matches) in one of their messages. */
+  quote: z.string(),
+  /** What the client noticed, in French, one sentence. */
+  note: z.string(),
+  /** The round whose turn recorded it. */
+  round: z.number().int().min(1),
+});
+export type InterviewObservation = z.infer<typeof InterviewObservationSchema>;
+
+/** One tool call of a turn, as the transcript and the eval show it. */
+export const ToolTraceSchema = z.object({
+  name: z.enum(INTERVIEW_TOOL_NAMES),
+  /** What the call targeted, short: a Q or F id, a reflex id, or the first words of a quote. */
+  target: z.string(),
+  /** The call gave what it asked for: false when refused, and for a quote check that did not find the words. */
+  ok: z.boolean(),
+});
+export type ToolTrace = z.infer<typeof ToolTraceSchema>;
+
+/** What /api/interview sends back in its done event. The defaults keep the structured mode's turns parseable. */
+export const InterviewTurnResultSchema = InterviewTurnOutputSchema.extend({
+  observations: z.array(InterviewObservationSchema).default([]),
+  toolCalls: z.array(ToolTraceSchema).default([]),
+});
+export type InterviewTurnResult = z.infer<typeof InterviewTurnResultSchema>;
+
 export const InterviewMessageSchema = z.object({
   role: z.enum(["candidate", "interviewer"]),
   text: z.string().trim().min(1).max(MAX_CANDIDATE_CHARS * 2),
@@ -38,6 +80,8 @@ export type InterviewMessage = z.infer<typeof InterviewMessageSchema> & {
   /** Interviewer messages only: the client answers this reply gave, and the move the model chose. */
   reveal?: string[];
   action?: InterviewAction;
+  /** Interviewer messages only, tool mode: the calls behind this reply. */
+  tools?: ToolTrace[];
 };
 
 /** What the simulated client knows. Built by the code from the frame and questions stages; never the recommendation. */
@@ -55,6 +99,8 @@ export const InterviewTurnInputSchema = z.object({
   round: z.number().int().min(1).max(INTERVIEW_MAX_ROUNDS),
   maxRounds: z.number().int().min(1).max(INTERVIEW_MAX_ROUNDS),
   revealed: z.array(z.string()).max(8),
+  /** Reflexes the client already noted in earlier turns: one observation per reflex and per interview. */
+  notedReflexes: z.array(ReflexIdSchema).max(10).optional(),
 });
 export type InterviewTurnInput = z.infer<typeof InterviewTurnInputSchema>;
 
@@ -89,6 +135,8 @@ export type InterviewState = {
   /** Client answers (Q ids) given so far, in order. */
   revealed: string[];
   debrief: StageOutputs["challenge"] | null;
+  /** Tool mode: what the client noted during the interview. Absent from interviews saved before it. */
+  observations?: InterviewObservation[];
   /** Guardrail notes from the server (unknown ids dropped, unsourced numbers…), shown discreetly. */
   notes: string[];
   error: string | null;

@@ -7,8 +7,11 @@ import {
   InterviewRequestSchema,
   MAX_CANDIDATE_CHARS,
   type InterviewMessage,
+  type InterviewObservation,
   type InterviewState,
   type InterviewTurnOutput,
+  type InterviewTurnResult,
+  type ToolTrace,
 } from "@/lib/interview/schema";
 import { INTERVIEW_SCORE_FORMULA, interviewScore } from "@/lib/interview/score";
 import { clarificationList, emptyRun, initialSession, migrateSession, type Session } from "@/lib/store/machine";
@@ -154,7 +157,13 @@ describe("preparing the interview", () => {
   it("builds the fact sheet with the usual stages, then the client opens with the gate still closed", async () => {
     startDemo();
     await settle();
-    expect(interview()).toMatchObject({ status: "preparing", messages: [], maxRounds: INTERVIEW_MAX_ROUNDS, closed: false });
+    expect(interview()).toMatchObject({
+      status: "preparing",
+      messages: [],
+      maxRounds: INTERVIEW_MAX_ROUNDS,
+      observations: [],
+      closed: false,
+    });
     expect(buildFactSheet(state())).toBeNull();
     expect(calls.map((c) => c.url)).toEqual([stageUrl("classify")]);
 
@@ -225,6 +234,7 @@ describe("an interviewer turn", () => {
       round: 1,
       maxRounds: INTERVIEW_MAX_ROUNDS,
       revealed: [],
+      notedReflexes: [],
     });
 
     await answer(TURN, reply({ reply: "Surtout la marge.", reveal: ["Q2", "Q9", "Q2"] }), ["Id inconnu retiré : Q9."]);
@@ -503,6 +513,155 @@ describe("edge cases met when wiring the parts together", () => {
     expect(interview()).toMatchObject({ status: "preparing", error: null });
     await answer(stageUrl("frame"), fixture("frame"));
     expect(interview()).toMatchObject({ status: "ready", messages: [opening] });
+  });
+});
+
+describe("the client's tools and private notes", () => {
+  const observation = (patch: Partial<InterviewObservation> = {}): InterviewObservation => ({
+    reflex: "E1",
+    severity: "high",
+    quote: "un data lake groupe",
+    note: "Le candidat propose une architecture avant d'avoir établi les besoins.",
+    round: 1,
+    ...patch,
+  });
+  const toolTurn = (patch: Partial<InterviewTurnResult> = {}): InterviewTurnResult => ({
+    ...reply(),
+    observations: [],
+    toolCalls: [],
+    ...patch,
+  });
+  const traced: ToolTrace[] = [
+    { name: "get_client_answer", target: "Q2", ok: true },
+    { name: "record_observation", target: "E1", ok: true },
+    { name: "lookup_fact", target: "F9", ok: false },
+  ];
+
+  it("tells the server which reflexes the client already noted, each once", async () => {
+    const noted = [observation(), observation({ reflex: "E4", round: 2 }), observation({ round: 3 })];
+    useSession.setState(readySession({ observations: noted }), true);
+    interviewActions.send("Qui porte le projet ?");
+    await settle();
+    expect(last(TURN).body.inputs.notedReflexes).toEqual(["E1", "E4"]);
+    expect(InterviewRequestSchema.safeParse(last(TURN).body).success).toBe(true);
+
+    await answer(TURN, toolTurn({ observations: [observation({ reflex: "E7", round: 1 })] }));
+    interviewActions.send("Et le calendrier ?");
+    await settle();
+    expect(last(TURN).body.inputs.notedReflexes).toEqual(["E1", "E4", "E7"]);
+  });
+
+  it("adds the turn's notes to the interview, a reflex already noted kept once with its first note", async () => {
+    const first = observation();
+    useSession.setState(readySession({ observations: [first] }), true);
+    const later = [
+      observation({ quote: "tout centraliser", note: "Encore la solution d'abord.", round: 2 }),
+      observation({ reflex: "E3", severity: "medium", quote: "par API", note: "Le choix de l'API n'est pas justifié.", round: 2 }),
+      observation({ reflex: "E3", severity: "low", quote: "en temps réel", note: "Une seconde note sur E3.", round: 2 }),
+    ];
+    await turn("On connecte tout par API en temps réel pour tout centraliser.", toolTurn({ observations: later }));
+    expect(interview().status).toBe("ready");
+    expect(interview().observations).toEqual([first, later[1]]);
+    // Private: the reply the candidate reads carries no note.
+    expect(JSON.stringify(interview().messages)).not.toContain("Le choix de l'API");
+  });
+
+  it("keeps the turn's tool calls on the client's reply, and none when there were none", async () => {
+    useSession.setState(readySession({ observations: [] }), true);
+    await turn("Où vont les données ?", toolTurn({ reply: "En Allemagne.", reveal: ["Q2"], toolCalls: traced }));
+    expect(interview().messages.at(-1)).toEqual({
+      role: "interviewer",
+      text: "En Allemagne.",
+      reveal: ["Q2"],
+      action: "clarify",
+      tools: traced,
+    });
+    expect(interview().revealed).toEqual(["Q2"]);
+
+    await turn("Merci.", toolTurn({ reply: "Je vous en prie." }));
+    expect(interview().messages.at(-1)).not.toHaveProperty("tools");
+    // The transcript sent back to the server stays role and text only.
+    interviewActions.send("Une dernière question ?");
+    await settle();
+    expect(last(TURN).body.inputs.transcript.every((m: object) => Object.keys(m).sort().join() === "role,text")).toBe(true);
+  });
+
+  it("still reads a structured-mode turn, which has neither notes nor tool calls", async () => {
+    const noted = [observation()];
+    useSession.setState(readySession({ observations: noted }), true);
+    await turn("Quel est le budget ?", reply({ reply: "Environ 2 M€.", reveal: ["Q3"] }));
+    expect(interview()).toMatchObject({ status: "ready", revealed: ["Q3"], observations: noted, error: null });
+    expect(interview().messages.at(-1)).toEqual({ role: "interviewer", text: "Environ 2 M€.", reveal: ["Q3"], action: "clarify" });
+  });
+
+  it("asks again for a turn whose notes or calls are malformed, instead of keeping them", async () => {
+    useSession.setState(readySession({ observations: [] }), true);
+    interviewActions.send("Quel est le budget ?");
+    await settle();
+    await answer(TURN, { ...toolTurn(), observations: [{ ...observation(), reflex: "E42" }] });
+    expect(interview()).toMatchObject({
+      status: "error",
+      error: "La réponse du client est illisible. Relance pour la redemander.",
+      observations: [],
+    });
+    interviewActions.retry();
+    await settle();
+    await answer(TURN, { ...toolTurn(), toolCalls: [{ name: "run_shell", target: "x", ok: true }] });
+    expect(interview().status).toBe("error");
+    expect(interview().messages.at(-1)).toEqual(candidate("Quel est le budget ?"));
+  });
+
+  it("carries on an interview saved before the notes existed: send, retry, end", async () => {
+    const saved = readySession();
+    expect(saved.interview).not.toHaveProperty("observations");
+    actions.openSaved(JSON.parse(JSON.stringify(saved)) as Session, "ab12cd34");
+    interviewActions.resume();
+
+    interviewActions.send("Quel est le budget ?");
+    await settle();
+    expect(last(TURN).body.inputs.notedReflexes).toEqual([]);
+    expect(InterviewRequestSchema.safeParse(last(TURN).body).success).toBe(true);
+    await fail(TURN);
+    expect(interview().status).toBe("error");
+    expect(interview()).not.toHaveProperty("observations");
+
+    interviewActions.retry();
+    await settle();
+    expect(last(TURN).body.inputs.notedReflexes).toEqual([]);
+    await answer(TURN, reply());
+    expect(interview()).toMatchObject({ status: "ready", observations: [] });
+
+    await turn("Je propose un data lake groupe.", toolTurn({ observations: [observation({ round: 2 })], toolCalls: traced }));
+    expect(interview().observations).toEqual([observation({ round: 2 })]);
+
+    interviewActions.end();
+    await settle();
+    expect(last(CHALLENGE).body.inputs.answer.endsWith("\n1. Quel est le budget ?\n2. Je propose un data lake groupe.")).toBe(true);
+    await answer(CHALLENGE, fixture("challenge"));
+    expect(interview()).toMatchObject({ status: "done", debrief: fixture("challenge"), observations: [observation({ round: 2 })] });
+    // The notes stay out of the score: the same interview without them scores the same.
+    const withoutNotes = { ...state(), interview: { ...interview(), observations: [] } };
+    expect(interviewScore(state())).toEqual(interviewScore(withoutNotes));
+  });
+
+  it("ends an interview saved before the notes existed, and debriefs it as before", async () => {
+    const messages = [opening, candidate("Quel est le budget ?"), interviewer("Environ 2 M€.")];
+    actions.openSaved(JSON.parse(JSON.stringify(readySession({ messages }))) as Session, "ab12cd34");
+    interviewActions.resume();
+    interviewActions.end();
+    await settle();
+    await answer(CHALLENGE, fixture("challenge"));
+    expect(interview()).toMatchObject({ status: "done", debrief: fixture("challenge") });
+    expect(interview()).not.toHaveProperty("observations");
+  });
+
+  it("keeps the notes when the candidate leaves for the full analysis", async () => {
+    const noted = [observation()];
+    const messages = [opening, candidate("Un data lake."), interviewer("Pourquoi ?")];
+    useSession.setState(readySession({ status: "done", messages, debrief: fixture("challenge"), observations: noted }), true);
+    interviewActions.showFullAnalysis();
+    await settle();
+    expect(interview()).toMatchObject({ closed: true, observations: noted });
   });
 });
 

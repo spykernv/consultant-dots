@@ -25,7 +25,7 @@ A *client interview* mode puts you in front of a simulated client first. You hav
 - **Grounding checked in code.** Every "fact" must quote the case. A Unicode-aware matcher checks the quote, and anything it cannot find is demoted to an assumption. ([brief.ts](src/lib/prompts/brief.ts), [normalize.ts](src/lib/pipeline/normalize.ts))
 - **A human-in-the-loop gate.** The stage graph stops after the clarifying questions. Nothing downstream runs until you answer them or accept their default assumptions. ([machine.ts](src/lib/store/machine.ts))
 - **The model describes, the code renders.** Diagrams are typed graphs compiled to Mermaid, and the value × feasibility ranking is computed, not generated. ([to-mermaid.ts](src/lib/diagram/to-mermaid.ts), [priority.ts](src/lib/diagram/priority.ts))
-- **Agentic only where the path stops being deterministic.** The analysis is a fixed graph. The client conversation is an agent loop, because its next step depends on what the candidate says. The code keeps the rules there too: a round limit, what the client may reveal, when the interview ends. ([Client interview mode](#client-interview-mode))
+- **Agentic only where the path stops being deterministic.** The analysis is a fixed graph. The client conversation is an agent loop with its own tools, because its next step depends on what the candidate says. The code keeps the rules there too: a round limit, what the client may reveal and how much per turn, which quotes are real, when the interview ends. ([Client interview mode](#client-interview-mode))
 - **Two engines, one contract.** By default every stage runs on the Claude Code CLI with your existing Claude login, so a subscriber pays nothing extra. An optional Claude API engine (official TypeScript SDK, structured outputs, prompt caching) runs the same prompts per token. ([claude-code.ts](src/lib/engine/claude-code.ts), [claude-api.ts](src/lib/engine/claude-api.ts))
 - **Measured, not asserted.** An eval harness runs the sample cases end to end through the app's own state machine. It scores the guardrails, and scores the interviewer critique against labelled answers next to an answer-blind baseline. ([Evaluation](#evaluation))
 - **Runs without an account.** A replay engine streams recorded real runs, so the demo and CI need no login and no API key. ([mock.ts](src/lib/engine/mock.ts))
@@ -137,12 +137,31 @@ This mode trains the part of the job the analysis cannot do for you ([Why I buil
 
 How one interview runs:
 - **What the client knows.** The code builds a fact sheet from the frame and questions stages: the case's facts and an answer to each clarification question. The pipeline stops at the clarification gate as usual, so the diagnosis, the options and the recommendation do not exist yet. Neither the client nor the candidate can see them.
-- **One model call per turn** (`POST /api/interview`, streamed like a stage, strict JSON output). The same engines run it: Claude Code by default, the API engine, or the replay engine for the demo.
+- **One agent run per turn** (`POST /api/interview`, streamed like a stage). The client calls its tools, then returns strict JSON: what it says, its move, whether it closes. The same engines run it: Claude Code by default, the API engine, or the replay engine for the demo. See [Native tool use](#native-tool-use).
 - **A synthesis exercise by design.** Each candidate message is capped at 1,200 characters, as in front of a real client: you have to say what matters, briefly. The UI says so next to the counter.
 - **Rules enforced in code, not asked of the model.** At most 8 rounds. The client cannot close before round 3 and always closes at the last round. Answer ids outside the fact sheet are dropped, at most two client answers are credited per turn (so "tell me everything" does not inflate the score), and replies are capped. Figures that appear in neither the case, the fact sheet nor the candidate's messages are flagged. The candidate's text cannot open or close the prompt's blocks.
 - **Debrief and score.** The debrief reuses the challenge stage (reflexes E1–E10) on the candidate's messages, with only the answers the client actually gave counted as answered. The score is computed in code, so it can be checked by hand: 60 % from the debrief's level, 40 % from the share of key questions answered by the client, minus 5 points per blocking flag. « Voir l'analyse complète » then opens the regular workspace, built on what the client said.
 
-To try it without any account, check **« Mode entretien client »** before clicking **« Démo sans IA »**: a scripted client replays recorded replies, and the debrief is a recording too.
+To try it without any account, check **« Mode entretien client »** before clicking **« Démo sans IA »**: a scripted client replays recorded replies (its tool calls go through the same code), and the debrief is a recording too.
+
+### Native tool use
+
+The client is a tool-using agent. Its prompt lists the questions a consultant may ask, **without the answers**: to give one, it has to look it up. Four tools, implemented once ([tools.ts](src/lib/interview/tools.ts)) and served to both engines:
+
+| Tool | What it does | What the code enforces |
+|---|---|---|
+| `get_client_answer(question_id)` | Returns the client's answer to a question | The id must exist. At most 2 new answers per turn. A turn's reveal (the coverage score) is **derived from these calls**, not declared by the model |
+| `lookup_fact(fact_id)` | Returns a fact of the case with its exact figures | The id must exist |
+| `check_quote(text)` | Tells whether some words are the candidate's own, and in which round | Matched in code with the same Unicode-aware matcher as the facts |
+| `record_observation(reflex, severity, quote, note)` | A private note for the debrief (reflexes E1–E10) | The quote must be found verbatim in the candidate's messages. One note per reflex per interview, 2 per turn |
+
+Every input is validated with Zod, a turn may make at most 8 calls, and each engine caps the model's tool rounds at 4 in code. The notes stay hidden during the interview. The debrief shows them next to the critique, with a badge when the critique flags the same reflex. Under each reply, the transcript shows what the client looked up (« Fiche client : réponse Q2 »).
+
+How each engine serves the tools:
+- **API engine**: a manual loop on the official SDK. Strict tool schemas, `tool_choice: auto` while rounds remain, then `none` to force the final JSON (this model rejects forced tool use). The history is append-only, thinking blocks included.
+- **Claude Code engine (default, on your subscription)**: an in-process MCP server over Streamable HTTP ([mcp-host.ts](src/lib/engine/mcp-host.ts)), on 127.0.0.1, a random port and a bearer token, alive for one turn and passed with `--mcp-config`. The CLI's `--safe-mode` drops every MCP server but SDK ones, so tool runs isolate the CLI differently: `--setting-sources ""` (no user or project settings, CLAUDE.md, plugins, hooks or skills), `--strict-mcp-config`, only these four tools allowed, and CLAUDE.md and auto-memory disabled by environment. Canary tests confirmed that no CLAUDE.md, skill or plugin reaches the model. One honest residual: without safe mode, the CLI adds a context block with the account's e-mail and the date; normalization masks an e-mail address if one ever reaches a reply. To cap rounds exactly, the engine matches the tool-use ids of the CLI's event stream with the ids the MCP calls carry; `--max-turns` is only a backstop.
+
+Measured on the Claude Code engine (Claude Opus 5.5, low effort): 4.6 s to 7.3 s per turn over 3 scripted turns, the first with two observations recorded, the next two with answers looked up. A full interview in the browser took 20 s of preparation, 4 turns and a 28 s debrief. `CONSULTANT_DOTS_INTERVIEW_TOOLS=off` goes back to the earlier mode: one structured call per turn, the answers in the prompt and the reveal declared by the model.
 
 ## Design decisions and lessons learned
 
@@ -152,6 +171,8 @@ To try it without any account, check **« Mode entretien client »** before clic
 - **Staleness is a product feature.** Hashing each stage's inputs, reduced to the changes that matter, tells the user which sections no longer match their latest input, without re-running everything.
 - **A replay engine pays for itself.** Recorded runs gave a free demo, fast deterministic tests and a contract check for every schema change. They do not replace live evals: a replayed output cannot regress when a prompt changes, which is why `npm run eval` runs the real engine.
 - **Put the agent loop where the path stops being deterministic, and nowhere else.** Turning the whole pipeline into an agent would have made it slower, costlier and harder to test for no gain. The interview is the one place where the next step cannot be known in advance. Even there, the model only picks its move; the code limits the rounds, decides what the client may reveal and ends the interview.
+- **Derive state from actions, not declarations.** In the first version the model declared which answers it gave, and the code could only filter that list. Now the client has to look an answer up to give it, and the reveal is the list of lookups that succeeded. The guarantee moved from "checked afterwards" to "impossible otherwise".
+- **A safe mode is not a sandbox.** The CLI's safe mode also disables the MCP servers the tools need. The isolation that works came from narrower switches, verified with canaries planted in CLAUDE.md files rather than assumed from the flag names.
 - **An eval needs a way to be wrong.** My first labelled set had only flawed answers, and an answer-blind list beat the critic on it. Adding strong control answers and that baseline is what turned the eval into a measurement.
 
 ## Engineering highlights
@@ -190,7 +211,8 @@ To try it without any account, check **« Mode entretien client »** before clic
 ### Engine
 - The default engine runs the **Claude Code CLI headless** (`claude -p`) as a managed child process:
   - structured output through `--json-schema` and a streamed event output;
-  - **no tools**, safe mode, no session persistence;
+  - for the analysis stages: **no tools**, safe mode, no session persistence;
+  - for the interview turns: the client's four tools through an in-process MCP server, with the CLI isolated by setting sources instead of safe mode ([Native tool use](#native-tool-use));
   - reasoning effort set per stage, a fallback model, a concurrency limit and a timeout;
   - on abort or timeout it kills the whole process tree on Windows (`taskkill /T /F`) and sends `SIGTERM` to the child elsewhere;
   - typed error mapping for auth, rate limit and overload.
@@ -271,7 +293,7 @@ Full report: [evals/results/20261001-1800-cli.md](evals/results/20261001-1800-cl
 What remains on the API side:
 - **Repair instead of failing.** Today, an output that still fails Zod validation ends the stage, and the user retries by hand. One automatic retry that sends the Zod issues back is cheap.
 - **Run evals in batch.** Eval runs (cases × samples × prompt versions) are not latency-sensitive, so they belong on the Message Batches endpoint, at half price.
-- **Keep the analysis a fixed graph.** The analysis stages do not need an agent loop: a fixed DAG keeps cost, latency and tests predictable. The client interview is the one place where the model chooses the next move. A loop with tools would help there next, for example a tool that checks a quote or looks up fact F3.
+- **Keep the analysis a fixed graph.** The analysis stages do not need an agent loop: a fixed DAG keeps cost, latency and tests predictable. The client interview is the one place where the model chooses the next move, and the one place with tools: both engines run the same four, implemented once ([Native tool use](#native-tool-use)).
 
 ## Getting started
 
@@ -300,6 +322,7 @@ Without a Claude subscription, set `CONSULTANT_DOTS_ENGINE=api` and `CONSULTANT_
 | `CONSULTANT_DOTS_CLAUDE_AUTH` | `subscription` | `subscription` removes API-key and auth-token variables from the CLI's environment, so your Claude login is used; `inherit` passes the environment through |
 | `CONSULTANT_DOTS_RECORD_FIXTURES` | `0` | `1` records the outputs for the built-in sample cases into `fixtures/mock/` |
 | `CONSULTANT_DOTS_CASES_DIR` | `cases/` | Where cases are saved, one folder per case |
+| `CONSULTANT_DOTS_INTERVIEW_TOOLS` | on | `off` runs the client interview without tools: one structured call per turn, as before |
 
 The reasoning effort per stage is set in `src/lib/engine/config.ts`.
 
@@ -319,7 +342,7 @@ The reasoning effort per stage is set in `src/lib/engine/config.ts`.
 src/lib/schemas/     Zod schema per stage (types, strict JSON Schema for the model, validation)
 src/lib/prompts/     system prompt, per-stage instructions, case brief (F/A/Q/C ids, quote matching)
 src/lib/playbooks/   10 domain analysis playbooks + a universal fallback
-src/lib/engine/      Claude Code bridge (process, stream parsing, errors), optional Claude API engine, mock engine
+src/lib/engine/      Claude Code bridge (process, stream parsing, errors), in-process MCP server for its tools, optional Claude API engine, mock engine
 src/lib/pipeline/    server-side stage runner, normalization (grounding, id checks), guardrail counters
 src/lib/interview/   client interview mode: contract, interviewer prompt, turn rules, client state, score
 src/lib/eval/        headless pipeline runner, metrics and report of the eval harness
@@ -338,7 +361,6 @@ evals/               labelled answers for the challenge eval; results/ holds the
 - Whiteboard view (current state | problems | target | roadmap) with PNG export
 - The next eval iteration: hand-reviewed labels, harder cases, and a critic prompt tuned against the current numbers
 - Training mode with scoring over several cases
-- Client interview, V2: native tool use for the interviewer. On the API engine this means the SDK's tool runner, with tools that look up a fact, verify a quote and record an observation. On the subscription engine, the same tools would come from an MCP server that Claude Code uses headless.
 - Client interview, V3: an evaluation with simulated candidates, run with the flawed and control answers that are already labelled. It would measure planted errors caught during the conversation, leaks of the solution, consistency of the client's answers with the fact sheet, and the cost per interview.
 - Client interview: scripted demos for the other two sample cases, and the transcript and debrief in the exports
 - English UI

@@ -9,7 +9,8 @@
     "reply": "Attendez, vous parlez déjà d'outil. Mes contrôleurs passent 10 jours par mois dans Excel, mais nos vraies disputes portent sur les définitions. Selon vous, qu'est-ce qui fait que mes chiffres sont contestés ?",
     "action": "challenge",
     "reveal": [],
-    "done": false
+    "done": false,
+    "toolCalls": [{ "name": "lookup_fact", "input": { "fact_id": "F5" } }]
   },
   {
     "reply": "Chaque filiale défend aujourd'hui sa propre définition de la marge. Le DAF groupe est prêt à porter le sujet comme sponsor. Comment feriez-vous adopter une définition commune par les filiales ?",
@@ -39,7 +40,11 @@
     "reply": "Côté moyens, ma DSI ne compte que 15 personnes, et j'attends un premier résultat visible sous 4 à 6 mois. Alors, que me proposez-vous de lancer en premier, et avec quelles ressources ?",
     "action": "clarify",
     "reveal": ["Q5"],
-    "done": false
+    "done": false,
+    "toolCalls": [
+      { "name": "lookup_fact", "input": { "fact_id": "F8" } },
+      { "name": "get_client_answer", "input": { "question_id": "Q5" } }
+    ]
   },
   {
     "reply": "Merci, je vois mieux votre démarche et par où commencer. Nous allons nous arrêter là : je vous ferai un retour rapidement.",

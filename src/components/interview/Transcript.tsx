@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, ArrowRight, ChevronDown, Info, Loader2, RotateCcw } from "lucide-react";
+import { AlertTriangle, ArrowRight, BookOpenCheck, ChevronDown, Info, Loader2, RotateCcw } from "lucide-react";
 import { interviewActions } from "@/lib/interview/client";
-import type { InterviewAction, InterviewMessage, InterviewStatus } from "@/lib/interview/schema";
+import type { InterviewAction, InterviewMessage, InterviewStatus, ToolTrace } from "@/lib/interview/schema";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -18,8 +18,34 @@ const ACTION_LABELS: Record<InterviewAction, string> = {
   wrap_up: "a conclu",
 };
 
+/**
+ * What the client checked before replying, as the candidate may see it: the fact sheet's entries and the quotes it
+ * verified. The private notes (record_observation) are the debrief's, and a refused call checked nothing.
+ */
+export function visibleLookups(tools: ToolTrace[] | undefined): string | null {
+  const answers: string[] = [];
+  const facts: string[] = [];
+  let quotes = 0;
+  for (const call of tools ?? []) {
+    if (!call.ok) continue;
+    const ids = call.name === "get_client_answer" ? answers : call.name === "lookup_fact" ? facts : null;
+    const id = call.target.trim().toUpperCase();
+    if (ids && id && !ids.includes(id)) ids.push(id);
+    if (call.name === "check_quote") quotes++;
+  }
+  const list = (word: string, ids: string[]) =>
+    ids.length > 0 ? `${word}${ids.length > 1 ? "s" : ""} ${ids.join(", ")}` : null;
+  const sheet = [list("réponse", answers), list("fait", facts)].filter((part) => part !== null);
+  const parts = [
+    sheet.length > 0 ? `Fiche client : ${sheet.join(" · ")}` : null,
+    quotes === 1 ? "citation vérifiée" : quotes > 1 ? `${quotes} citations vérifiées` : null,
+  ].filter((part) => part !== null);
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
+
 function Bubble({ message, showMove }: { message: InterviewMessage; showMove: boolean }) {
   const client = message.role === "interviewer";
+  const lookups = client ? visibleLookups(message.tools) : null;
   return (
     <li className={cn("flex flex-col gap-0.5", client ? "items-start" : "items-end")}>
       <span className="px-1 text-[10.5px] font-medium text-slate-400">{client ? "Client" : "Toi"}</span>
@@ -31,6 +57,12 @@ function Bubble({ message, showMove }: { message: InterviewMessage; showMove: bo
       >
         {message.text}
       </div>
+      {lookups && (
+        <span className="flex items-center gap-1 px-1 text-[10.5px] text-slate-500">
+          <BookOpenCheck className="size-3 shrink-0" />
+          {lookups}
+        </span>
+      )}
       {showMove && client && message.action && (
         <span className="px-1 text-[10.5px] text-slate-400 italic">Le client {ACTION_LABELS[message.action]}</span>
       )}

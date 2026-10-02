@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef } from "react";
-import { AlertTriangle, ArrowRight, CheckCircle2, CircleCheck, CircleX, Lightbulb, Mic } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, CircleCheck, CircleX, Lightbulb, Mic, NotebookPen } from "lucide-react";
 import { CHALLENGE_LEVEL_LABELS, SEVERITY_LABELS } from "@/lib/domain/labels";
 import { REFLEXES } from "@/lib/domain/reflexes";
 import { interviewActions } from "@/lib/interview/client";
+import type { InterviewObservation } from "@/lib/interview/schema";
 import { INTERVIEW_SCORE_FORMULA, interviewScore } from "@/lib/interview/score";
 import type { Challenge, ChallengeLevel, Severity } from "@/lib/schemas/challenge";
+import type { ReflexId } from "@/lib/schemas/common";
 import { useSession } from "@/lib/store/session-store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -53,6 +55,54 @@ function FlagItem({ flag }: { flag: Challenge["flags"][number] }) {
         </p>
       )}
     </li>
+  );
+}
+
+function ObservationItem({ observation, alsoFlagged }: { observation: InterviewObservation; alsoFlagged: boolean }) {
+  const { reflex, severity, quote, note, round } = observation;
+  return (
+    <li className={cn("rounded-lg border border-l-4 border-slate-200 bg-white p-2 text-xs", SEVERITY_STYLES[severity])}>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <NotebookPen className="size-3.5 text-indigo-500" />
+        <span className="font-semibold text-slate-900">
+          {reflex} · {REFLEXES[reflex]?.titleFr}
+        </span>
+        <span className="rounded bg-slate-100 px-1 text-[10px] text-slate-600">{SEVERITY_LABELS[severity]}</span>
+        <span className="text-[10px] text-slate-500 tabular-nums">tour {round}</span>
+        {alsoFlagged && (
+          <span className="rounded bg-indigo-100 px-1 text-[10px] text-indigo-800">aussi relevé par le débrief</span>
+        )}
+      </div>
+      {quote && <p className="mt-1 border-l-2 border-slate-200 pl-2 text-slate-500 italic">« {quote} »</p>}
+      {note && <p className="mt-1 text-slate-700">{note}</p>}
+    </li>
+  );
+}
+
+/**
+ * What the client noted while the interview ran, hidden from the candidate until it is over. The notes do not count in
+ * the score: the debrief reads the whole conversation, the client noted one moment of it.
+ */
+export function ClientNotes({
+  observations,
+  flagged = new Set(),
+}: {
+  observations: InterviewObservation[];
+  /** Reflexes the debrief flagged too. */
+  flagged?: ReadonlySet<ReflexId>;
+}) {
+  if (observations.length === 0) return null;
+  return (
+    <div>
+      <SectionTitle hint="relevées en direct, citations vérifiées dans tes messages">
+        Notes du client pendant l&apos;entretien
+      </SectionTitle>
+      <ul className="space-y-2">
+        {observations.map((observation, i) => (
+          <ObservationItem key={i} observation={observation} alsoFlagged={flagged.has(observation.reflex)} />
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -115,6 +165,8 @@ export function Debrief({ readOnly = false }: { readOnly?: boolean }) {
   const { level } = score;
   const blocking = debrief.flags.filter((f) => f.severity === "high");
   const others = debrief.flags.filter((f) => f.severity !== "high");
+  // Interviews saved before the client took notes have none.
+  const observations = session.interview?.observations ?? [];
 
   return (
     <div
@@ -198,6 +250,7 @@ export function Debrief({ readOnly = false }: { readOnly?: boolean }) {
           </ul>
         </div>
       )}
+      <ClientNotes observations={observations} flagged={new Set(debrief.flags.map((f) => f.reflex))} />
 
       {debrief.strengths.length > 0 && (
         <div>

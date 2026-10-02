@@ -10,6 +10,23 @@ const FALLBACK_REPLY = "Je vous écoute : poursuivez, s'il vous plaît.";
 const CONTINUE_REPLY = "Avant de conclure, j'aimerais aller un peu plus loin avec vous : poursuivez, s'il vous plaît.";
 const CLOSING_REPLY = "Nous allons devoir nous arrêter là : merci pour cet échange.";
 
+export const EMAIL_MASK = "[adresse masquée]";
+// Bounded parts (as in RFC 5321) keep the scan linear on a long reply without spaces.
+const EMAIL = /[\p{L}\p{N}._%+-]{1,64}@(?:[\p{L}\p{N}-]{1,63}\.){1,8}\p{L}{2,24}/gu;
+
+/**
+ * Tool runs on the CLI cannot use --safe-mode, which drops our MCP server, and without it the CLI puts the account's
+ * e-mail in a context block: no address reaches the candidate, whatever the model writes.
+ */
+export function maskEmails(text: string): { text: string; count: number } {
+  let count = 0;
+  const masked = text.replace(EMAIL, () => {
+    count++;
+    return EMAIL_MASK;
+  });
+  return { text: masked, count };
+}
+
 export type NormalizedTurn = {
   data: InterviewTurnOutput;
   notes: string[];
@@ -107,6 +124,7 @@ export function normalizeTurn(output: InterviewTurnOutput, inputs: InterviewTurn
     doneIgnored: 0,
     closingQuestions: 0,
     unsourcedNumbers: 0,
+    emailMasked: 0,
   };
 
   const byId = new Map(inputs.factSheet.clientAnswers.map((a) => [a.id.toUpperCase(), a.id]));
@@ -137,6 +155,13 @@ export function normalizeTurn(output: InterviewTurnOutput, inputs: InterviewTurn
     checks.replyEmpty = 1;
     notes.push("Réponse vide du client remplacée par une phrase type.");
   } else {
+    // Before the cap: the mask may be longer than the address, and an address's digits are not figures.
+    const masked = maskEmails(reply);
+    if (masked.count) {
+      checks.emailMasked = masked.count;
+      notes.push("Adresse e-mail masquée dans la réponse du client.");
+      reply = masked.text;
+    }
     const capped = capReply(reply);
     if (capped !== reply) {
       checks.replyTruncated = 1;
@@ -177,6 +202,8 @@ export function normalizeTurn(output: InterviewTurnOutput, inputs: InterviewTurn
   if (done) {
     const kept = withoutQuestions(reply);
     if (kept !== reply) checks.closingQuestions = 1;
+    // Nothing of the model's reply is left, only the code's goodbye: the answers it gave went with it.
+    if (!kept) replyReplaced = true;
     if (wantsClose) {
       reply = kept || CLOSING_REPLY;
     } else {

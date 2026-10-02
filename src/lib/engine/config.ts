@@ -29,5 +29,7 @@ export function engineEnv() {
     claudeBin: process.env.CONSULTANT_DOTS_CLAUDE_BIN?.trim() || null,
     auth: process.env.CONSULTANT_DOTS_CLAUDE_AUTH?.trim() === "inherit" ? ("inherit" as const) : ("subscription" as const),
     recordFixtures: process.env.CONSULTANT_DOTS_RECORD_FIXTURES === "1",
+    /** The interviewer calls tools (default); "off" goes back to one structured call per turn, the reveal declared by the model. */
+    interviewTools: !/^(off|0|false)$/i.test(process.env.CONSULTANT_DOTS_INTERVIEW_TOOLS?.trim() ?? ""),
   };
 }

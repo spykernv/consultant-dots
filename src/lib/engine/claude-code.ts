@@ -1,10 +1,19 @@
 import { execFile, spawn, type ChildProcess } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { engineEnv, MAX_CONCURRENT_RUNS } from "./config";
-import { EngineError, type EngineRequest, type EngineResult, type RateLimitInfo } from "./types";
+import { startMcpHost, type McpHost } from "./mcp-host";
+import {
+  EngineError,
+  TOOL_LIMIT_TEXT,
+  type EngineRequest,
+  type EngineResult,
+  type EngineToolResult,
+  type EngineToolSet,
+  type RateLimitInfo,
+} from "./types";
 
 let cachedBin: string | null = null;
 let lastRateLimit: RateLimitInfo | null = null;
@@ -49,14 +58,19 @@ function listDir(dir: string): string[] {
 /** Provider credentials (`*_API_KEY`, `*_AUTH_TOKEN`) that the CLI would use instead of the Claude login. */
 const API_CREDENTIAL = /_(API_KEY|AUTH_TOKEN)$/i;
 
-export function childEnv(): NodeJS.ProcessEnv {
+export function childEnv(options: { tools?: boolean } = {}): NodeJS.ProcessEnv {
   const env = { ...process.env };
   if (engineEnv().auth === "subscription") {
-    // A user-level API key would otherwise take precedence over the Claude login. The child runs without tools,
-    // so it needs none of these credentials.
+    // A user-level API key would otherwise take precedence over the Claude login. The child runs no built-in tool
+    // (a tool run's tools run in this process), so it needs none of these credentials.
     for (const name of Object.keys(env)) if (API_CREDENTIAL.test(name)) delete env[name];
   }
   env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = "1";
+  if (options.tools) {
+    // Defense in depth: --setting-sources "" already leaves out the user's and the project's CLAUDE.md.
+    env.CLAUDE_CODE_DISABLE_CLAUDE_MDS = "1";
+    env.CLAUDE_CODE_DISABLE_AUTO_MEMORY = "1";
+  }
   return env;
 }
 
@@ -143,6 +157,212 @@ function mapExitFailure(code: number | null, stderr: string): EngineError {
   return new EngineError("engine_error", `Claude Code s'est arrêté (code ${code ?? "?"}). ${clip(stderr.trim())}`.trim());
 }
 
+/** --max-turns ran out: only a tool run sets it, so the model kept calling tools instead of answering. */
+const MAX_TURNS_HIT = "Le client a enchaîné trop d'appels d'outils sans répondre : réessaie.";
+
+/**
+ * Tool runs cannot use --safe-mode: it drops every MCP server but the SDK's own (CLI 2.1.283), the app's tool server
+ * included. They lock the CLI down another way: --setting-sources "" loads no user, project or local settings (no
+ * CLAUDE.md, plugins, hooks or skills), --strict-mcp-config keeps only the --mcp-config server, --allowedTools lets
+ * only its tools through, and --tools "" still leaves no built-in one.
+ * Without --safe-mode the CLI also puts the account's e-mail and today's date in a context block; normalizeTurn masks
+ * an e-mail address if one ever reaches a reply.
+ */
+function toolArgs(tools: EngineToolSet, mcpConfigFile: string | undefined): string[] {
+  if (!mcpConfigFile) throw new Error("A tool run needs its --mcp-config file.");
+  return [
+    "--setting-sources",
+    "",
+    "--strict-mcp-config",
+    "--mcp-config",
+    mcpConfigFile,
+    "--allowedTools",
+    tools.tools.map((tool) => `mcp__${tools.serverName}__${tool.name}`).join(","),
+    // A backstop with slack for the answer and a refused round: the iteration guard is the exact cap.
+    "--max-turns",
+    String(tools.maxIterations + 3),
+  ];
+}
+
+/** The CLI's arguments for one run. A pipeline stage keeps --safe-mode; a tool run swaps it for toolArgs. */
+export function buildArgs(req: EngineRequest, files: { systemPromptFile: string; mcpConfigFile?: string }): string[] {
+  const env = engineEnv();
+  return [
+    "-p",
+    "--model",
+    env.model,
+    ...(env.fallbackModel && env.fallbackModel !== env.model ? ["--fallback-model", env.fallbackModel] : []),
+    "--effort",
+    req.effort,
+    "--system-prompt-file",
+    files.systemPromptFile,
+    "--json-schema",
+    JSON.stringify(req.jsonSchema),
+    "--output-format",
+    "stream-json",
+    "--include-partial-messages",
+    "--verbose",
+    "--tools",
+    "",
+    ...(req.tools ? toolArgs(req.tools, files.mcpConfigFile) : ["--safe-mode", "--strict-mcp-config"]),
+    "--disable-slash-commands",
+    "--no-session-persistence",
+  ];
+}
+
+/**
+ * How long a call waits, in all, for the stream to name it and to end its message: the CLI writes both before the
+ * call, but the pipe may lag.
+ */
+const CALL_WAIT_MS = 500;
+
+/**
+ * What a call made in the same message as the final answer gets instead of running. The CLI runs every tool_use of a
+ * message and the answer then ends the turn, so the reply was written without this result; if the CLI turns the
+ * answer down, the model reads this and can call again.
+ */
+export const ANSWER_SENT_TEXT =
+  "Answer already submitted: this call did not run. Call tools in a message of their own, before the answer.";
+
+export type IterationGuard = {
+  /** Reads one stream-json message of the run. */
+  observe(message: Record<string, unknown>): void;
+  /**
+   * The toolset to serve: a call from a round past maxIterations, or from the message that holds the answer
+   * (StructuredOutput), is refused without running.
+   */
+  wrap(toolset: EngineToolSet): EngineToolSet;
+  /** Assistant messages that called at least one of the server's tools, refused rounds included. */
+  rounds(): number;
+};
+
+type Json = Record<string, unknown>;
+
+/**
+ * The exact cap on tool rounds, which --max-turns cannot give. The stream tells which assistant message each tool_use
+ * id belongs to, and the MCP server receives that id with the call (_meta "claudecode/toolUseId"). Each message_start
+ * opens a message, and its first tool_use of the server makes it a round. Full "assistant" messages register their
+ * ids too, should the partial events miss one.
+ * A call is judged once its message has ended (message_delta or message_stop, the next message_start, a full message
+ * with its stop_reason, or the result): only then is it known whether the message also holds the answer, whose
+ * StructuredOutput block may come before or after the call's. A call still unsettled after the wait runs, unless
+ * what the stream showed so far already refuses it (fail open): the session's own call budget still caps it.
+ */
+export function createIterationGuard(serverName: string, maxIterations: number, waitMs = CALL_WAIT_MS): IterationGuard {
+  const prefix = `mcp__${serverName}__`;
+  type Message = { round: number | null; answered: boolean; ended: boolean };
+  let rounds = 0;
+  let current: Message | null = null;
+  /** API message id → its entry: the stream and the full messages describe the same message, counted once. */
+  const messages = new Map<string, Message>();
+  const messageByCall = new Map<string, Message>();
+  /** Calls not settled yet: each checks again after every line of the stream. */
+  const waiting = new Set<() => void>();
+
+  const newMessage = (): Message => ({ round: null, answered: false, ended: false });
+  const roundOf = (message: Message) => (message.round ??= ++rounds);
+
+  const isServerCall = (block: unknown): block is { id: string } => {
+    const b = block as Json | null;
+    return b?.type === "tool_use" && typeof b.id === "string" && typeof b.name === "string" && b.name.startsWith(prefix);
+  };
+  const isAnswer = (block: unknown) => {
+    const b = block as Json | null;
+    return b?.type === "tool_use" && b.name === "StructuredOutput";
+  };
+
+  function messageFor(id: unknown): Message {
+    if (typeof id !== "string") return newMessage();
+    let message = messages.get(id);
+    if (!message) messages.set(id, (message = newMessage()));
+    return message;
+  }
+
+  function register(callId: string, message: Message) {
+    if (messageByCall.has(callId)) return;
+    roundOf(message);
+    messageByCall.set(callId, message);
+  }
+
+  function endAllBut(next: Message | null) {
+    for (const message of messages.values()) if (message !== next) message.ended = true;
+    if (current && current !== next) current.ended = true;
+  }
+
+  function observe(msg: Json) {
+    if (msg.type === "stream_event") {
+      const event = (msg.event ?? {}) as Json;
+      if (event.type === "message_start") {
+        // One message at a time: a new one ends every earlier one.
+        const next = messageFor((event.message as Json | undefined)?.id);
+        endAllBut(next);
+        current = next;
+      } else if (event.type === "content_block_start") {
+        const block = event.content_block;
+        // A block seen before any message_start still belongs to one message.
+        if (isServerCall(block)) register(block.id, (current ??= newMessage()));
+        else if (isAnswer(block)) (current ??= newMessage()).answered = true;
+      } else if ((event.type === "message_delta" || event.type === "message_stop") && current) {
+        // Both come after the message's last block.
+        current.ended = true;
+      }
+    } else if (msg.type === "assistant") {
+      const message = (msg.message ?? {}) as Json;
+      const content: unknown[] = Array.isArray(message.content) ? message.content : [];
+      const calls = content.filter(isServerCall);
+      // A sibling the stream already registered gives the message: the same message is never counted twice.
+      const target = calls.map((block) => messageByCall.get(block.id)).find(Boolean) ?? messageFor(message.id);
+      for (const block of calls) register(block.id, target);
+      if (content.some(isAnswer)) target.answered = true;
+      if (typeof message.stop_reason === "string") target.ended = true;
+    } else if (msg.type === "result") {
+      endAllBut(null);
+    }
+    for (const check of [...waiting]) check();
+  }
+
+  /** A refusal, null to run the call, or undefined while the stream has not settled it. */
+  function verdict(callId: string): EngineToolResult | null | undefined {
+    const message = messageByCall.get(callId);
+    if (!message) return undefined;
+    if ((message.round ?? 0) > maxIterations) return { text: TOOL_LIMIT_TEXT, isError: true };
+    if (message.answered) return { text: ANSWER_SENT_TEXT, isError: true };
+    return message.ended ? null : undefined;
+  }
+
+  function judge(callId: string): Promise<EngineToolResult | null> {
+    const now = verdict(callId);
+    if (now !== undefined) return Promise.resolve(now);
+    return new Promise((resolve) => {
+      const settle = (result: EngineToolResult | null) => {
+        clearTimeout(timer);
+        waiting.delete(check);
+        resolve(result);
+      };
+      const check = () => {
+        const result = verdict(callId);
+        if (result !== undefined) settle(result);
+      };
+      const timer = setTimeout(() => settle(verdict(callId) ?? null), waitMs);
+      waiting.add(check);
+    });
+  }
+
+  return {
+    observe,
+    rounds: () => rounds,
+    wrap: (toolset) => ({
+      serverName: toolset.serverName,
+      tools: toolset.tools,
+      maxIterations: toolset.maxIterations,
+      async call(name, input, context) {
+        const refusal = context?.callId === undefined ? null : await judge(context.callId);
+        return refusal ?? toolset.call(name, input, context);
+      },
+    }),
+  };
+}
+
 export async function runClaudeCode(req: EngineRequest): Promise<EngineResult> {
   const bin = resolveClaudeBin();
   if (!bin) {
@@ -162,37 +382,57 @@ export async function runClaudeCode(req: EngineRequest): Promise<EngineResult> {
 }
 
 function spawnRun(bin: string, req: EngineRequest): Promise<EngineResult> {
-  const env = engineEnv();
+  if (req.tools) return spawnToolRun(bin, req, req.tools);
+  return spawnCli(bin, req, buildArgs(req, { systemPromptFile: systemPromptFile(req.systemPrompt) }), childEnv());
+}
+
+/**
+ * A tool run serves its tools from a local MCP server for the length of the run, behind the iteration guard. The
+ * server and its config file (which holds the server's token) go away whatever the outcome.
+ */
+async function spawnToolRun(bin: string, req: EngineRequest, tools: EngineToolSet): Promise<EngineResult> {
+  const guard = createIterationGuard(tools.serverName, tools.maxIterations);
+  let host: McpHost;
+  try {
+    host = await startMcpHost(guard.wrap(tools));
+  } catch (err) {
+    throw new EngineError("engine_error", `Impossible de démarrer le serveur d'outils local : ${err instanceof Error ? err.message : err}`);
+  }
+  let configDir: string | null = null;
+  try {
+    // A fresh private directory (0700 on POSIX), not the shared work dir: another local user could have created that
+    // predictable path first and swapped the config for a server of their own. "wx" never writes through a planted file.
+    configDir = mkdtempSync(path.join(os.tmpdir(), "consultant-dots-mcp-"));
+    const configFile = path.join(configDir, "mcp.json");
+    writeFileSync(configFile, JSON.stringify(host.config), { encoding: "utf8", mode: 0o600, flag: "wx" });
+    const args = buildArgs(req, { systemPromptFile: systemPromptFile(req.systemPrompt), mcpConfigFile: configFile });
+    const result = await spawnCli(bin, req, args, childEnv({ tools: true }), guard.observe);
+    return { ...result, toolIterations: guard.rounds() };
+  } finally {
+    await host.close().catch(() => undefined);
+    try {
+      if (configDir) rmSync(configDir, { recursive: true, force: true });
+    } catch {
+      // Best effort: the token it holds is dead once the server is closed.
+    }
+  }
+}
+
+function spawnCli(
+  bin: string,
+  req: EngineRequest,
+  args: string[],
+  env: NodeJS.ProcessEnv,
+  onMessage?: (message: Record<string, unknown>) => void,
+): Promise<EngineResult> {
   const dir = workDir();
-  const args = [
-    "-p",
-    "--model",
-    env.model,
-    ...(env.fallbackModel && env.fallbackModel !== env.model ? ["--fallback-model", env.fallbackModel] : []),
-    "--effort",
-    req.effort,
-    "--system-prompt-file",
-    systemPromptFile(req.systemPrompt),
-    "--json-schema",
-    JSON.stringify(req.jsonSchema),
-    "--output-format",
-    "stream-json",
-    "--include-partial-messages",
-    "--verbose",
-    "--tools",
-    "",
-    "--safe-mode",
-    "--strict-mcp-config",
-    "--disable-slash-commands",
-    "--no-session-persistence",
-  ];
 
   return new Promise<EngineResult>((resolve, reject) => {
     if (req.signal.aborted) return reject(new EngineError("aborted", "Étape arrêtée."));
 
     const child = spawn(bin, args, {
       cwd: path.join(dir, "cwd"),
-      env: childEnv(),
+      env,
       stdio: ["pipe", "pipe", "pipe"],
       windowsHide: true,
     });
@@ -231,10 +471,13 @@ function spawnRun(bin: string, req: EngineRequest): Promise<EngineResult> {
       } catch {
         return;
       }
+      onMessage?.(msg);
       if (msg.type === "stream_event") {
         const event = msg.event as Record<string, unknown>;
         if (event.type === "message_start") {
           model = ((event.message as Record<string, unknown>)?.model as string) ?? model;
+          // Block indexes restart with each message: a delta of this one must never match an earlier StructuredOutput.
+          structuredIndex = null;
         } else if (event.type === "content_block_start") {
           const block = event.content_block as Record<string, unknown>;
           if (block?.type === "thinking" || block?.type === "redacted_thinking") {
@@ -288,6 +531,7 @@ function spawnRun(bin: string, req: EngineRequest): Promise<EngineResult> {
         if (timedOut) return reject(new EngineError("timeout", `Délai dépassé (${Math.round(req.timeoutMs / 1000)} s).`));
         const final = result as Record<string, unknown> | null;
         if (!final) return reject(mapExitFailure(code, stderr));
+        if (final.subtype === "error_max_turns") return reject(new EngineError("invalid_output", MAX_TURNS_HIT));
         if (final.is_error) return reject(mapResultError(final, stderr));
         if (final.structured_output == null) {
           return reject(new EngineError("invalid_output", "Claude n'a pas renvoyé de sortie structurée."));

@@ -6,7 +6,7 @@ import { interviewScore } from "@/lib/interview/score";
 import { useSession } from "@/lib/store/session-store";
 import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Debrief } from "./Debrief";
+import { ClientNotes, Debrief } from "./Debrief";
 import { SystemNotes, Transcript } from "./Transcript";
 
 /**
@@ -39,10 +39,14 @@ export function InterviewRecap() {
           {interview.debrief ? (
             <Debrief readOnly />
           ) : (
-            <div className="text-xs text-slate-500">
-              <p>Pas de débrief pour cet entretien.</p>
-              {interview.error && <p className="mt-0.5 text-[11px] text-slate-400">{interview.error}</p>}
-            </div>
+            <>
+              <div className="text-xs text-slate-500">
+                <p>Pas de débrief pour cet entretien.</p>
+                {interview.error && <p className="mt-0.5 text-[11px] text-slate-400">{interview.error}</p>}
+              </div>
+              {/* Recorded live, the client's notes outlast an interview left before its debrief. */}
+              <ClientNotes observations={interview.observations ?? []} />
+            </>
           )}
           <Collapsible open={transcriptOpen} onOpenChange={setTranscriptOpen}>
             <CollapsibleTrigger className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-700">

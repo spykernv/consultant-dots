@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { runClaudeApi } from "@/lib/engine/claude-api";
 import { runClaudeCode } from "@/lib/engine/claude-code";
 import { EngineError, type EngineRequest } from "@/lib/engine/types";
@@ -68,6 +68,16 @@ const mockRequest = (inputs: InterviewTurnInput, patch: Partial<InterviewRequest
   inputs,
   ...patch,
 });
+
+/** These turns run in structured mode, where the model declares its reveal; tool mode has its own tests. */
+function useStructuredMode() {
+  beforeEach(() => {
+    process.env.CONSULTANT_DOTS_INTERVIEW_TOOLS = "off";
+  });
+  afterEach(() => {
+    delete process.env.CONSULTANT_DOTS_INTERVIEW_TOOLS;
+  });
+}
 
 describe("normalizeTurn", () => {
   it("keeps only known client answers, once each, and counts the others", () => {
@@ -179,6 +189,21 @@ describe("normalizeTurn", () => {
     );
   });
 
+  it("reveals nothing when only the code's goodbye is left of a closing reply, since the candidate heard no answer", () => {
+    const CLOSING = "Nous allons devoir nous arrêter là : merci pour cet échange.";
+    // Asked to close, or forced to at the last round: the questions go, and nothing else was said.
+    const asked = normalizeTurn(turn({ reply: "Des questions ?", action: "wrap_up", done: true }), turnInputs(5));
+    const forced = normalizeTurn(turn({ action: "challenge", reply: "Et vos KPIs, lesquels ? Le reporting ?" }), turnInputs(8));
+    for (const { data, checks } of [asked, forced]) {
+      expect(data).toMatchObject({ reply: CLOSING, action: "wrap_up", done: true, reveal: [] });
+      expect(checks.closingQuestions).toBe(1);
+    }
+    // A sentence of the model's survives: what it said may hold the answer, which stays revealed.
+    expect(normalizeTurn(turn({ action: "probe" }), turnInputs(8)).data).toMatchObject({ done: true, reveal: ["Q1"] });
+    const thanks = turn({ reply: "Merci, c'est clair. Des questions ?", action: "wrap_up", done: true });
+    expect(normalizeTurn(thanks, turnInputs(5)).data).toMatchObject({ reply: "Merci, c'est clair.", reveal: ["Q1"] });
+  });
+
   it("flags figures absent from the case and the fact sheet, without changing the reply", () => {
     const reply = "Nous avons 40 % d'écart et un budget de 2 M€. Le reporting prend 10 jours sur 1,2 Md€ de chiffre d'affaires.";
     const { data, notes, checks } = normalizeTurn(turn({ reply }), turnInputs());
@@ -249,7 +274,7 @@ describe("buildTurnMessage", () => {
 
   it("never carries a recommendation: the inputs have no such field and drop any extra", () => {
     expect(Object.keys(InterviewTurnInputSchema.shape).sort()).toEqual(
-      ["caseText", "factSheet", "maxRounds", "revealed", "round", "transcript"].sort(),
+      ["caseText", "factSheet", "maxRounds", "notedReflexes", "revealed", "round", "transcript"].sort(),
     );
     const options = fixture("options");
     const parsed = InterviewTurnInputSchema.parse({ ...inputs, options, recommendation: options.recommendation });
@@ -285,6 +310,21 @@ describe("demo interview fixture", () => {
     });
   });
 
+  it("scripts tool calls that agree with its reveal, so both modes give the same answers", () => {
+    const factIds = new Set(fixture("frame").facts.map((f) => f.id));
+    const scripted = turns.filter((raw) => "toolCalls" in (raw as object));
+    expect(scripted.length).toBeGreaterThan(0);
+    for (const raw of scripted) {
+      const { toolCalls, reveal } = raw as { toolCalls: { name: string; input: Record<string, string> }[]; reveal: string[] };
+      const asked = toolCalls.filter((c) => c.name === "get_client_answer").map((c) => c.input.question_id);
+      expect(asked).toEqual(reveal);
+      for (const call of toolCalls) {
+        expect(["get_client_answer", "lookup_fact"]).toContain(call.name);
+        if (call.name === "lookup_fact") expect(factIds.has(call.input.fact_id)).toBe(true);
+      }
+    }
+  });
+
   it("passes the guardrails untouched", () => {
     turns.forEach((raw, i) => {
       const t = InterviewTurnOutputSchema.parse(raw);
@@ -309,6 +349,8 @@ describe("demo interview fixture", () => {
 });
 
 describe("runInterviewTurn", () => {
+  useStructuredMode();
+
   afterEach(() => {
     delete process.env.CONSULTANT_DOTS_ENGINE;
     vi.mocked(runClaudeApi).mockReset();
@@ -378,7 +420,45 @@ describe("runInterviewTurn", () => {
   });
 });
 
+describe("runInterviewTurn, a last reply that only asks questions", () => {
+  const CLOSING = "Nous allons devoir nous arrêter là : merci pour cet échange.";
+  const questionsOnly = { reply: "Et vos KPIs, lesquels ?", action: "challenge", done: false };
+
+  afterEach(() => {
+    delete process.env.CONSULTANT_DOTS_INTERVIEW_TOOLS;
+    vi.mocked(runClaudeCode).mockReset();
+  });
+
+  it("closes with the code's goodbye and reveals nothing, in structured mode", async () => {
+    process.env.CONSULTANT_DOTS_INTERVIEW_TOOLS = "off";
+    vi.mocked(runClaudeCode).mockResolvedValue({ output: { ...questionsOnly, reveal: ["Q1"] }, model: "m", costUsd: 0, rateLimit: null });
+    expect((await run(mockRequest(turnInputs(8), { mock: false }))).at(-1)).toMatchObject({
+      type: "done",
+      data: { reply: CLOSING, action: "wrap_up", done: true, reveal: [] },
+    });
+  });
+
+  it("closes with the code's goodbye and reveals nothing, in tool mode, the answer looked up traced as not given", async () => {
+    vi.mocked(runClaudeCode).mockImplementation(async (req: EngineRequest) => {
+      await req.tools!.call("get_client_answer", { question_id: "Q1" }, { callId: "toolu_1" });
+      return { output: questionsOnly, model: "m", costUsd: 0, rateLimit: null };
+    });
+    expect((await run(mockRequest(turnInputs(8), { mock: false }))).at(-1)).toMatchObject({
+      type: "done",
+      data: {
+        reply: CLOSING,
+        action: "wrap_up",
+        done: true,
+        reveal: [],
+        toolCalls: [{ name: "get_client_answer", target: "Q1", ok: false }],
+      },
+    });
+  });
+});
+
 describe("POST /api/interview", () => {
+  useStructuredMode();
+
   const post = (body: string, headers: Record<string, string> = {}) =>
     POST(
       new Request("http://127.0.0.1:3000/api/interview", {
